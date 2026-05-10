@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>기상종합</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260510b">
+  </head>
+  <body>
+    <main class="page-shell overview-shell">
+      <nav class="page-nav" aria-label="화면 전환">
+        <a href="/query1" class="nav-link">기상정보</a>
+        <a href="/area-warnings" class="nav-link">해역별 기상특보</a>
+        <a href="/tides" class="nav-link">조석표</a>
+        <a href="/overview" class="nav-link current">기상종합</a>
+        <a href="/settings" class="nav-link">설정</a>
+        <button id="save-layout-btn" class="nav-save-btn" type="button">설정 저장</button>
+      </nav>
+
+      <section id="overview-split" class="overview-split">
+        <section id="overview-pane-stack" class="overview-pane overview-pane-stack">
+          <section class="overview-subpane overview-subpane-top">
+            <div class="overview-subpane-header">
+              <span id="overview-left-title" class="overview-subpane-title">해역별 기상특보</span>
+              <div class="pane-zoom-controls">
+                <button type="button" class="zoom-btn" id="zoom-dec-left" aria-label="축소">-</button>
+                <span class="zoom-value" id="zoom-val-left">100%</span>
+                <button type="button" class="zoom-btn" id="zoom-inc-left" aria-label="확대">+</button>
+              </div>
+            </div>
+            <iframe
+              id="overview-left-frame"
+              class="overview-pane-frame overview-subpane-frame"
+              src="/area-warnings?embed=1"
+              title="해역별 기상특보"
+              loading="eager"
+            ></iframe>
+          </section>
+
+          <button
+            id="overview-h-divider"
+            class="overview-h-divider"
+            type="button"
+            role="separator"
+            aria-label="위아래 높이 조절"
+            aria-orientation="horizontal"
+            title="드래그해 위아래 크기 조절"
+          >
+            <span class="overview-h-divider-bar" aria-hidden="true"></span>
+          </button>
+
+          <section class="overview-subpane overview-subpane-bottom">
+            <div class="overview-subpane-header">
+              <span class="overview-subpane-title">조석표</span>
+              <div class="pane-zoom-controls">
+                <button type="button" class="zoom-btn" id="zoom-dec-bottom" aria-label="축소">-</button>
+                <span class="zoom-value" id="zoom-val-bottom">100%</span>
+                <button type="button" class="zoom-btn" id="zoom-inc-bottom" aria-label="확대">+</button>
+              </div>
+            </div>
+            <iframe
+              id="overview-bottom-frame"
+              class="overview-pane-frame overview-subpane-frame"
+              src="/tides?embed=1&refresh=20260510b"
+              title="조석표"
+              loading="eager"
+            ></iframe>
+          </section>
+        </section>
+
+        <button
+          id="overview-divider"
+          class="overview-divider"
+          type="button"
+          role="separator"
+          aria-label="좌우 너비 조절"
+          aria-orientation="vertical"
+          title="드래그해 좌우 크기 조절"
+        >
+          <span class="overview-divider-bar" aria-hidden="true"></span>
+        </button>
+
+        <section class="overview-pane">
+          <div class="pane-zoom-bar">
+            <span id="overview-right-title" class="pane-zoom-label">기상정보</span>
+            <div class="pane-zoom-controls">
+              <button type="button" class="zoom-btn" id="zoom-dec-right" aria-label="축소">-</button>
+              <span class="zoom-value" id="zoom-val-right">100%</span>
+              <button type="button" class="zoom-btn" id="zoom-inc-right" aria-label="확대">+</button>
+            </div>
+          </div>
+          <iframe
+            id="overview-right-frame"
+            class="overview-pane-frame"
+            src="/query1?embed=1"
+            title="기상정보"
+            loading="eager"
+          ></iframe>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      window.__CLIENT_REFRESH_SECONDS__ = {{ client_refresh_seconds }};
+      window.__OVERVIEW_LAYOUT__ = {{ layout_json | safe }};
+    </script>
+    <script src="/static/overview.js?v=20260510b"></script>
+  </body>
+</html>

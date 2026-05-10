@@ -1,0 +1,123 @@
+[
+  {
+    "area_name": "서해남부앞바다",
+    "warning_region": "전남북부서해앞바다",
+    "display_group": "전남서해앞바다",
+    "display_subgroup": "북부",
+    "display_slot": "오전",
+    "forecast_slot": "오전",
+    "show_forecast": true,
+    "source_name": "목포",
+    "station_id": "530350"
+  },
+  {
+    "area_name": "서해남부앞바다",
+    "warning_region": "전남중부서해앞바다",
+    "display_group": "",
+    "display_subgroup": "중부",
+    "display_slot": "",
+    "forecast_slot": "오전",
+    "show_forecast": false,
+    "source_name": "안좌터미널",
+    "station_id": "1079001"
+  },
+  {
+    "area_name": "서해남부앞바다",
+    "warning_region": "전남남부서해앞바다",
+    "display_group": "",
+    "display_subgroup": "남부",
+    "display_slot": "오후",
+    "forecast_slot": "오후",
+    "show_forecast": true,
+    "source_name": "신안",
+    "station_id": "22183"
+  },
+  {
+    "area_name": "서해남부북쪽안쪽먼바다",
+    "warning_region": "서해남부북쪽안쪽먼바다",
+    "display_group": "서해남부안쪽먼바다",
+    "display_subgroup": "북쪽",
+    "display_slot": "오전",
+    "forecast_slot": "오전",
+    "show_forecast": true,
+    "source_name": "칠발도",
+    "station_id": "22102"
+  },
+  {
+    "area_name": "서해남부북쪽안쪽먼바다",
+    "warning_region": "서해남부북쪽안쪽먼바다",
+    "display_group": "",
+    "display_subgroup": "",
+    "display_slot": "오후",
+    "forecast_slot": "오후",
+    "show_forecast": true,
+    "source_name": "흑산도",
+    "station_id": "33010"
+  },
+  {
+    "area_name": "서해남부남쪽안쪽먼바다",
+    "warning_region": "서해남부남쪽안쪽먼바다",
+    "display_group": "",
+    "display_subgroup": "남쪽",
+    "display_slot": "오전",
+    "forecast_slot": "오전",
+    "show_forecast": true,
+    "source_name": "홍도",
+    "station_id": "22298"
+  },
+  {
+    "area_name": "서해남부남쪽안쪽먼바다",
+    "warning_region": "서해남부남쪽안쪽먼바다",
+    "display_group": "",
+    "display_subgroup": "",
+    "display_slot": "오후",
+    "forecast_slot": "오후",
+    "show_forecast": true,
+    "source_name": "가거도",
+    "station_id": "22297"
+  },
+  {
+    "area_name": "전남서부남해앞바다",
+    "warning_region": "전남서부남해앞바다",
+    "display_group": "남해서부",
+    "display_subgroup": "앞바다",
+    "display_slot": "오전",
+    "forecast_slot": "오전",
+    "show_forecast": true,
+    "source_name": "추자도",
+    "station_id": "22184"
+  },
+  {
+    "area_name": "전남서부남해앞바다",
+    "warning_region": "전남서부남해앞바다",
+    "display_group": "",
+    "display_subgroup": "",
+    "display_slot": "오후",
+    "forecast_slot": "오후",
+    "show_forecast": true,
+    "source_name": "하조도등대",
+    "station_id": "1139001"
+  },
+  {
+    "area_name": "남해서부서쪽먼바다",
+    "warning_region": "남해서부서쪽먼바다",
+    "display_group": "",
+    "display_subgroup": "서쪽먼바다",
+    "display_slot": "오전",
+    "forecast_slot": "오전",
+    "show_forecast": true,
+    "source_name": "해수서",
+    "station_id": "959"
+  },
+  {
+    "area_name": "남해서부서쪽먼바다",
+    "warning_region": "남해서부서쪽먼바다",
+    "display_group": "",
+    "display_subgroup": "",
+    "display_slot": "오후",
+    "forecast_slot": "오후",
+    "show_forecast": true,
+    "source_name": "제주항",
+    "station_id": "22457"
+  }
+]

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>기상종합용 조석표 시안 비교</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260507z">
+  </head>
+  <body>
+    <main class="page-shell">
+      <nav class="page-nav" aria-label="화면 전환">
+        <a href="/query1" class="nav-link">기상정보</a>
+        <a href="/area-warnings" class="nav-link">해역별 기상특보</a>
+        <a href="/tides" class="nav-link">조석표</a>
+        <a href="/overview" class="nav-link">기상종합</a>
+        <a href="/settings" class="nav-link">설정</a>
+      </nav>
+
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Overview Tide Preview</p>
+          <h1>기상종합용 조석표 시안 비교</h1>
+          <p class="subtitle">기상종합 하단 패널 안에 들어가는 크기와 밀도를 기준으로 비교하는 탭입니다.</p>
+        </div>
+        <div class="meta-panel">
+          <div class="meta-item">
+            <span class="meta-label">비교 범위</span>
+            <strong id="preview-scope">기상종합 3개 지점</strong>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">API 시각</span>
+            <strong id="preview-generated-at">-</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="table-card tide-layout-preview-card">
+        <div class="table-card-header">
+          <div>
+            <h2>비교 기준</h2>
+            <p>목포, 서망, 계마 3개를 한 번에 넣었을 때, 지금이 밀물/썰물 중 어디인지, 얼마나 남았는지, 현재 조위가 얼마인지를 얼마나 빨리 읽을 수 있는지 비교합니다.</p>
+          </div>
+        </div>
+        <div class="tide-preview-toolbar">
+          <div class="tide-preview-legend">
+            <span class="tide-preview-legend-item"><span class="example-legend-dot ok"></span>고조</span>
+            <span class="tide-preview-legend-item"><span class="example-legend-dot tide-legend-low"></span>저조</span>
+            <span class="tide-preview-legend-item"><span class="tide-now-line-chip"></span>현재</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="tide-layout-preview-grid" class="tide-layout-preview-grid"></section>
+    </main>
+
+    <script>
+      window.__INITIAL_TIDE_SNAPSHOT__ = {{ snapshot_json | safe }};
+      window.__CLIENT_REFRESH_SECONDS__ = {{ client_refresh_seconds }};
+    </script>
+    <script src="/static/tide_layout_preview.js?v=20260507z"></script>
+  </body>
+</html>

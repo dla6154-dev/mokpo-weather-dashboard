@@ -1,0 +1,19 @@
+{
+  "result": {
+    "status": "OK",
+    "message": "",
+    "recordset": [
+      {
+        "DATETIME": "20260504132000",
+        "MMAF_CODE": "113",
+        "MMAF_NM": "목포청",
+        "MMSI_CODE": "1139001",
+        "MMSI_NM": "하조도등대",
+        "WIND_DIRECT": "112",
+        "WIND_SPEED": "5.14",
+        "WAVE_HEIGTH": "미제공",
+        "HORIZON_VISIBL": "미제공"
+      }
+    ]
+  }
+}

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>해역별 기상특보</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260507g">
+  </head>
+  <body class="{% if embed %}embed-body{% endif %}">
+    <main class="page-shell{% if embed %} embed-shell{% endif %}">
+      {% if not embed %}
+        <nav class="page-nav" aria-label="화면 전환">
+          <a href="/query1" class="nav-link">기상정보</a>
+          <a href="/area-warnings" class="nav-link current">해역별 기상특보</a>
+          <a href="/tides" class="nav-link">조석표</a>
+          <a href="/overview" class="nav-link">기상종합</a>
+          <a href="/settings" class="nav-link">설정</a>
+        </nav>
+
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">기상특보 전용 정리 화면</p>
+            <h1>해역별 기상특보</h1>
+            <p class="subtitle">선택한 해역에 대해서만 특보 현황을 정리해서 봅니다.</p>
+          </div>
+          <div class="meta-panel">
+            <div class="meta-item">
+              <span class="meta-label">API 시각</span>
+              <strong id="generated-at">-</strong>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">상태</span>
+              <strong id="stale-badge" class="badge">확인 중</strong>
+            </div>
+          </div>
+        </header>
+      {% endif %}
+
+      <section class="query1-layout">
+        <article class="table-card example-card">
+          <div class="table-card-header example-card-header">
+            <div>
+              <h2>해역별 기상특보</h2>
+              <p id="status-message">초기 데이터를 불러오는 중입니다.</p>
+            </div>
+            {% if embed %}
+            <div class="example-card-actions">
+                <button type="button" class="settings-open-btn" onclick="window.open('/area-warnings', '_blank', 'width=1480,height=960')">해역 설정</button>
+            </div>
+            {% endif %}
+          </div>
+          <div class="table-scroll">
+            <table class="sheet-table area-warning-table example-data-table">
+              <thead>
+                <tr>
+                  <th>특보구역</th>
+                  <th>특보현황</th>
+                  <th>발표</th>
+                  <th>발효</th>
+                  <th>해제</th>
+                </tr>
+              </thead>
+              <tbody id="area-warning-body"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <aside class="panel selection-panel example-settings-panel">
+          <div class="panel-header example-settings-header">
+            <div>
+              <h2>해역 설정</h2>
+            </div>
+            <p id="selection-summary" class="panel-meta">불러오는 중</p>
+          </div>
+          <div class="selection-toolbar">
+            <input id="area-search" class="selection-search" type="search" placeholder="전체목록 검색">
+            <div class="selection-save-row">
+              <button id="save-selection" type="button" class="selection-button save">현재 선택 저장</button>
+              <span id="save-status" class="panel-meta"></span>
+            </div>
+          </div>
+          <div class="dual-list">
+            <section class="dual-list-column">
+              <h3 class="dual-list-title">전체목록</h3>
+              <select id="available-areas" class="station-select" size="18" multiple aria-label="전체 해역 목록"></select>
+            </section>
+            <div class="dual-list-actions" aria-label="목록 이동 버튼">
+              <button id="add-selected" type="button" class="selection-button">&gt;</button>
+              <button id="add-all" type="button" class="selection-button">&gt;&gt;</button>
+              <button id="remove-selected" type="button" class="selection-button subtle">&lt;</button>
+              <button id="remove-all" type="button" class="selection-button subtle">&lt;&lt;</button>
+            </div>
+            <section class="dual-list-column">
+              <h3 class="dual-list-title">선택목록</h3>
+              <select id="selected-areas" class="station-select" size="18" multiple aria-label="선택한 해역 목록"></select>
+              <div class="selected-order-actions">
+                <button id="move-up" type="button" class="selection-button subtle">위로</button>
+                <button id="move-down" type="button" class="selection-button subtle">아래로</button>
+              </div>
+            </section>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      window.__INITIAL_AREA_WARNING_SNAPSHOT__ = {{ snapshot_json | safe }};
+      window.__CLIENT_REFRESH_SECONDS__ = {{ client_refresh_seconds }};
+      window.__AREA_WARNING_DEFAULT_SELECTION__ = {{ default_selection_json | safe }};
+      window.__AREA_WARNING_TM__ = {{ preview_tm | tojson }};
+    </script>
+    <script src="/static/area_warnings.js?v=20260507g"></script>
+  </body>
+</html>

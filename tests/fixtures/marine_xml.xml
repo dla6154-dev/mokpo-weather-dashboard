@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<result>
+  <status>OK</status>
+  <message></message>
+  <recordset>
+    <record>
+      <DATETIME>20260504132000</DATETIME>
+      <MMAF_CODE>112</MMAF_CODE>
+      <MMAF_NM>제주단</MMAF_NM>
+      <MMSI_CODE>994403901</MMSI_CODE>
+      <MMSI_NM>중뢰등표</MMSI_NM>
+      <WIND_DIRECT>20</WIND_DIRECT>
+      <WIND_SPEED>6.17</WIND_SPEED>
+    </record>
+    <record>
+      <DATETIME>20260504132000</DATETIME>
+      <MMAF_CODE>112</MMAF_CODE>
+      <MMAF_NM>제주단</MMAF_NM>
+      <MMSI_CODE>994403895</MMSI_CODE>
+      <MMSI_NM>방서등대</MMSI_NM>
+      <WIND_DIRECT>296</WIND_DIRECT>
+      <WIND_SPEED>3.08</WIND_SPEED>
+    </record>
+  </recordset>
+</result>

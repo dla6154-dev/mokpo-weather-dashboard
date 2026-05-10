@@ -1,0 +1,30 @@
+{
+  "result": {
+    "status": "OK",
+    "message": "",
+    "recordset": [
+      {
+        "DATETIME": "20260504132000",
+        "MMAF_CODE": "107",
+        "MMAF_NM": "목포청",
+        "MMSI_CODE": "1079008",
+        "MMSI_NM": "외달도등표",
+        "WIND_DIRECT": "340",
+        "WIND_SPEED": "9.77",
+        "WAVE_HEIGTH": "미제공",
+        "HORIZON_VISIBL": "미제공"
+      },
+      {
+        "DATETIME": "20260504132000",
+        "MMAF_CODE": "107",
+        "MMAF_NM": "목포청",
+        "MMSI_CODE": "1079001",
+        "MMSI_NM": "안좌여객선터미널",
+        "WIND_DIRECT": "135",
+        "WIND_SPEED": "2.06",
+        "WAVE_HEIGTH": "미제공",
+        "HORIZON_VISIBL": "19.8"
+      }
+    ]
+  }
+}

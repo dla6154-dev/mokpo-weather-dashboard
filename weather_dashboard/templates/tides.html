@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>조석표</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260510b">
+  </head>
+  <body class="{% if embed %}embed-body tides-embed-body{% endif %}">
+    <main class="page-shell{% if embed %} embed-shell tides-embed-shell{% endif %}">
+      {% if not embed %}
+        <nav class="page-nav" aria-label="화면 전환">
+          <a href="/query1" class="nav-link">기상정보</a>
+          <a href="/area-warnings" class="nav-link">해역별 기상특보</a>
+          <a href="/tides" class="nav-link current">조석표</a>
+          <a href="/overview" class="nav-link">기상종합</a>
+          <a href="/settings" class="nav-link">설정</a>
+        </nav>
+
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">조석 예보</p>
+            <h1>조석표</h1>
+            <p class="subtitle" id="date-label">오늘의 조석 곡선</p>
+          </div>
+          <div class="meta-panel">
+            <div class="meta-item">
+              <span class="meta-label">기준일</span>
+              <strong id="date-str">-</strong>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">상태</span>
+              <strong id="stale-badge" class="badge">확인 중</strong>
+            </div>
+          </div>
+        </header>
+      {% endif %}
+
+      <section class="tides-layout">
+        <article class="table-card tide-dashboard-card example-card">
+          {% if not embed %}
+          <div class="table-card-header example-card-header">
+            <div>
+              <h2>지점별 조석 곡선</h2>
+              <p id="status-message">초기 데이터를 불러오는 중입니다.</p>
+            </div>
+            <div class="example-legend tide-chart-legend" aria-hidden="true">
+              <span class="example-legend-item">
+                <span class="example-legend-dot ok"></span>
+                고조
+              </span>
+              <span class="example-legend-item">
+                <span class="example-legend-dot tide-legend-low"></span>
+                저조
+              </span>
+              <span class="example-legend-item">
+                <span class="tide-now-line-chip"></span>
+                현재 시각
+              </span>
+            </div>
+          </div>
+          {% endif %}
+          <div id="tide-grid" class="tide-card-grid"></div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      window.__INITIAL_TIDE_SNAPSHOT__ = {{ snapshot_json | safe }};
+      window.__CLIENT_REFRESH_SECONDS__ = {{ client_refresh_seconds }};
+      window.__TIDES_EMBED__ = {{ "true" if embed else "false" }};
+    </script>
+    <script src="/static/tides.js?v=20260510b"></script>
+  </body>
+</html>

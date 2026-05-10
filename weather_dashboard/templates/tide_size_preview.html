@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>조석표 크기 후보</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260506an">
+  </head>
+  <body>
+    <main class="page-shell">
+      <nav class="page-nav" aria-label="화면 전환">
+        <a href="/query1" class="nav-link">기상정보</a>
+        <a href="/area-warnings" class="nav-link">해역별 기상특보</a>
+        <a href="/tides" class="nav-link">조석표</a>
+        <a href="/overview" class="nav-link">기상종합</a>
+        <a href="/tide-size-preview" class="nav-link current">조석표 크기 후보</a>
+        <a href="/settings" class="nav-link">설정</a>
+      </nav>
+
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">한 화면 보기 조석표</p>
+          <h1>목포 기준 글자 크기 후보</h1>
+          <p class="subtitle">같은 목포 조석 데이터를 4가지 크기로 비교합니다. 조위·시간·남은 시간의 식별성만 다르고 구성은 같습니다.</p>
+        </div>
+        <div class="meta-panel compare-meta-panel">
+          <div class="meta-item">
+            <span class="meta-label">비교 지점</span>
+            <strong>목포 1개 지점</strong>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">용도</span>
+            <strong>한 화면 보기 조석표</strong>
+          </div>
+        </div>
+      </header>
+
+      <section id="tide-size-preview-grid" class="tide-size-preview-grid"></section>
+    </main>
+
+    <script>
+      window.__INITIAL_TIDE_SNAPSHOT__ = {{ snapshot_json | safe }};
+    </script>
+    <script src="/static/tide_size_preview.js?v=20260506ao"></script>
+  </body>
+</html>

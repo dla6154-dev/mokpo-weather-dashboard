@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>설정</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260507b">
+  </head>
+  <body>
+    <main class="page-shell">
+      <nav class="page-nav" aria-label="화면 전환">
+        <a href="/query1" class="nav-link">기상정보</a>
+        <a href="/area-warnings" class="nav-link">해역별 기상특보</a>
+        <a href="/tides" class="nav-link">조석표</a>
+        <a href="/overview" class="nav-link">기상종합</a>
+        <a href="/settings" class="nav-link current">설정</a>
+      </nav>
+
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">시스템</p>
+          <h1>설정</h1>
+          <p class="subtitle">API 조회 주기 및 브라우저 갱신 주기를 설정합니다.</p>
+        </div>
+      </header>
+
+      <section class="settings-layout">
+
+        <article class="table-card settings-card warning-map-card">
+          <div class="table-card-header">
+            <div>
+              <h2>특보 현황도</h2>
+              <p id="warning-map-status">기상청 API 허브에서 최신 특보 현황도를 표시합니다.</p>
+            </div>
+            <div class="settings-actions">
+              <button id="warning-map-refresh-btn" class="settings-save-btn" type="button">새로고침</button>
+            </div>
+          </div>
+          <div class="warning-map-body">
+            <img
+              id="warning-map-img"
+              class="warning-map-img"
+              src="/api/kma/warning-map.png"
+              alt="특보 현황도"
+            >
+          </div>
+        </article>
+
+        <article class="table-card settings-card">
+          <div class="table-card-header">
+            <div>
+              <h2>API 조회 주기</h2>
+              <p id="settings-status">서버에서 현재 설정을 불러왔습니다.</p>
+            </div>
+            <div class="settings-actions">
+              <button id="settings-save-btn" class="settings-save-btn" type="button">저장</button>
+            </div>
+          </div>
+
+          <div class="settings-body">
+            <table class="settings-table">
+              <thead>
+                <tr>
+                  <th>항목</th>
+                  <th>현재 주기</th>
+                  <th>변경</th>
+                  <th>단위</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="settings-label">기상상황부 서버 조회</td>
+                  <td id="cur-dashboard" class="settings-cur">-</td>
+                  <td>
+                    <input id="inp-dashboard" class="settings-input" type="number" min="30" max="86400" step="30">
+                  </td>
+                  <td class="settings-unit">초</td>
+                </tr>
+                <tr>
+                  <td class="settings-label">기상정보 서버 조회</td>
+                  <td id="cur-query1" class="settings-cur">-</td>
+                  <td>
+                    <input id="inp-query1" class="settings-input" type="number" min="30" max="86400" step="30">
+                  </td>
+                  <td class="settings-unit">초</td>
+                </tr>
+                <tr>
+                  <td class="settings-label">해역별 기상특보 서버 조회</td>
+                  <td id="cur-area" class="settings-cur">-</td>
+                  <td>
+                    <input id="inp-area" class="settings-input" type="number" min="30" max="86400" step="30">
+                  </td>
+                  <td class="settings-unit">초</td>
+                </tr>
+                <tr>
+                  <td class="settings-label">조석표 서버 조회</td>
+                  <td id="cur-tide" class="settings-cur">-</td>
+                  <td>
+                    <input id="inp-tide" class="settings-input" type="number" min="60" max="86400" step="60">
+                  </td>
+                  <td class="settings-unit">초</td>
+                </tr>
+                <tr class="settings-divider-row">
+                  <td class="settings-label">브라우저 → 서버 갱신 주기</td>
+                  <td id="cur-client" class="settings-cur">-</td>
+                  <td>
+                    <input id="inp-client" class="settings-input" type="number" min="10" max="3600" step="10">
+                  </td>
+                  <td class="settings-unit">초</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p class="settings-note">
+              서버 조회 주기 변경은 현재 대기 중인 주기가 끝난 뒤 다음 회차부터 적용됩니다.<br>
+              브라우저 갱신 주기는 페이지를 새로고침해야 적용됩니다.
+            </p>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      window.__SETTINGS__ = {{ settings_json | safe }};
+    </script>
+    <script src="/static/settings.js?v=20260507b"></script>
+  </body>
+</html>

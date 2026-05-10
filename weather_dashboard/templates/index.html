@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>목포 기상상황부</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260505l">
+  </head>
+  <body>
+    <main class="page-shell">
+      <nav class="page-nav" aria-label="화면 전환">
+        <a href="/query1" class="nav-link">기상정보</a>
+        <a href="/area-warnings" class="nav-link">해역별 기상특보</a>
+        <a href="/tides" class="nav-link">조석표</a>
+          <a href="/overview" class="nav-link">기상종합</a>
+          <a href="/settings" class="nav-link">설정</a>
+      </nav>
+
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">내부 전용 실시간 대시보드</p>
+          <h1>목포 기상상황부</h1>
+          <p class="subtitle">정리본 기준 기상상황부를 웹에서 실시간으로 확인하는 화면</p>
+        </div>
+        <div class="meta-panel">
+          <div class="meta-item">
+            <span class="meta-label">마지막 갱신</span>
+            <strong id="generated-at">-</strong>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">상태</span>
+            <strong id="stale-badge" class="badge">확인 중</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="table-card">
+        <div class="table-card-header">
+          <div>
+            <h2>해역별 기상 / 기상정보 수집 현황</h2>
+            <p id="status-message">초기 데이터를 불러오는 중입니다.</p>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th colspan="11" class="section-title forecast">해역별 기상청 특보 현황</th>
+                <th colspan="5" class="section-title observed">기상정보 수집 현황</th>
+              </tr>
+              <tr>
+                <th colspan="3">해역/둘러보기</th>
+                <th>풍향</th>
+                <th>풍속<br><small>(m/sec)</small></th>
+                <th>파고<br><small>(m)</small></th>
+                <th>천기</th>
+                <th colspan="4">기상특보</th>
+                <th>수집처</th>
+                <th>시간</th>
+                <th>풍향</th>
+                <th colspan="2">풍속 / 파고 / 시정</th>
+              </tr>
+              <tr>
+                <th class="subhead">구역</th>
+                <th class="subhead">분류</th>
+                <th class="subhead">시간대</th>
+                <th class="subhead"></th>
+                <th class="subhead"></th>
+                <th class="subhead"></th>
+                <th class="subhead"></th>
+                <th class="subhead">종류</th>
+                <th class="subhead">발표시간</th>
+                <th class="subhead">발효시간</th>
+                <th class="subhead">해제시간</th>
+                <th class="subhead"></th>
+                <th class="subhead"></th>
+                <th class="subhead"></th>
+                <th class="subhead">풍속 / gust</th>
+                <th class="subhead">파고 / 최대 / 시정</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="side-by-side">
+        <article class="panel">
+          <div class="panel-header">
+            <h2>특보 현황</h2>
+          </div>
+          <div class="warning-map">
+            <img id="warning-map" alt="기상특보 지도">
+          </div>
+          <ul id="warning-list" class="warning-list"></ul>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2>예보 해설</h2>
+            <p id="commentary-meta" class="panel-meta"></p>
+          </div>
+          <pre id="commentary-body" class="commentary-body"></pre>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      window.__INITIAL_SNAPSHOT__ = {{ snapshot_json | safe }};
+      window.__CLIENT_REFRESH_SECONDS__ = {{ client_refresh_seconds }};
+    </script>
+    <script src="/static/dashboard.js?v=20260505l"></script>
+  </body>
+</html>

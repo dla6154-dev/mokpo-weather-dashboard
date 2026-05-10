@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-background": "#191c1e",
+                      "surface": "#f7f9fb",
+                      "inverse-surface": "#2d3133",
+                      "surface-dim": "#d8dadc",
+                      "on-secondary-container": "#526478",
+                      "on-tertiary-fixed": "#001d31",
+                      "error": "#ba1a1a",
+                      "secondary-fixed-dim": "#b5c8df",
+                      "outline-variant": "#c4c6cd",
+                      "on-surface-variant": "#44474c",
+                      "secondary-fixed": "#d1e4fb",
+                      "inverse-primary": "#b7c8de",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "surface-tint": "#4f6073",
+                      "primary-container": "#1a2b3c",
+                      "on-surface": "#191c1e",
+                      "tertiary-container": "#002c47",
+                      "on-primary-container": "#8192a7",
+                      "on-tertiary-fixed-variant": "#004b73",
+                      "primary-fixed-dim": "#b7c8de",
+                      "on-primary-fixed-variant": "#38485a",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-bright": "#f7f9fb",
+                      "on-primary-fixed": "#0b1d2d",
+                      "surface-container-high": "#e6e8ea",
+                      "error-container": "#ffdad6",
+                      "background": "#f7f9fb",
+                      "on-secondary-fixed": "#091d2e",
+                      "secondary-container": "#cfe2f9",
+                      "surface-container": "#eceef0",
+                      "on-tertiary": "#ffffff",
+                      "outline": "#74777d",
+                      "on-secondary-fixed-variant": "#36485b",
+                      "secondary": "#4e6073",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#d2e4fb",
+                      "on-tertiary-container": "#3398da",
+                      "surface-container-highest": "#e0e3e5",
+                      "surface-container-low": "#f2f4f6",
+                      "tertiary-fixed-dim": "#92ccff",
+                      "surface-variant": "#e0e3e5",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed": "#cce5ff",
+                      "primary": "#041627",
+                      "tertiary": "#001727",
+                      "on-primary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "container-padding": "1.5rem",
+                      "table-row-height": "2.5rem",
+                      "card-gap": "1rem",
+                      "cell-padding-x": "0.75rem",
+                      "gutter": "1rem"
+              },
+              "fontFamily": {
+                      "table-header": ["Inter"],
+                      "table-cell": ["Inter"],
+                      "body-md": ["Inter"],
+                      "h2": ["Inter"],
+                      "label-caps": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "h1": ["Inter"]
+              },
+              "fontSize": {
+                      "table-header": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "table-cell": ["13px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "h2": ["18px", {"lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "label-caps": ["11px", {"lineHeight": "12px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                      "h1": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen">
+<!-- TopNavBar Shell -->
+<header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center w-full px-6 py-2 h-16 z-50 fixed top-0">
+<div class="flex items-center gap-8">
+<span class="text-lg font-black uppercase tracking-tighter text-[#1A2B3C] dark:text-white">Maritime Sentinel</span>
+<nav class="hidden md:flex items-center gap-6 font-['Inter'] text-sm font-medium tracking-wide">
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#1A2B3C] dark:hover:text-slate-200 transition-colors duration-200" href="#">Dashboard</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#1A2B3C] dark:hover:text-slate-200 transition-colors duration-200" href="#">Fleet</a>
+<a class="text-[#1A2B3C] dark:text-blue-400 border-b-2 border-[#1A2B3C] dark:border-blue-400 pb-1" href="#">Weather</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#1A2B3C] dark:hover:text-slate-200 transition-colors duration-200" href="#">Tide Tables</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-[#1A2B3C] dark:hover:text-slate-200 transition-colors duration-200" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="pl-9 pr-4 py-1.5 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-secondary" placeholder="Search vessels, ports..." type="text"/>
+</div>
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200 active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200 active:scale-95">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-slate-200">
+<img alt="Operator Profile Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a maritime operations manager, characterized by a clean, sharp look. The background is a soft-focus maritime control center with blue and white glowing displays, maintaining the high-contrast professional aesthetic of the command center. The lighting is bright and even, reinforcing a calm and authoritative atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAO3W-rlPYqLRWeMGpJ4AbauNdYDa-UyB6vSrAicktYulpfC4irmSwPOW5cvDlWAisjPAbpXoJWLvqv6usLFLz16XJN0_FyNjWgIWnmyLtxs-cmA_bc3IKmAMieP_PXESNVU7wBKGyAEtHx5aaPe0KJ5jp8a-_KYp8eu33wLS_TzYLiRUUS0t1062WHZObvZdpxdJGBBY6C_8zHwNJf_fiM2A_nCIVAzZO161eS_02ctjV-YpKs7rozwD4tD6Mnq4gCQBMpDT-WmRs"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar Shell -->
+<aside class="flex flex-col h-[calc(100vh-64px)] fixed left-0 top-16 w-64 py-4 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 z-40">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">directions_boat</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-slate-900 dark:text-white">Sector A-12</h3>
+<p class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">Monitoring Active</p>
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded font-['Inter'] text-xs font-semibold group transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-lg">dashboard</span>
+                Overview
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 bg-slate-200 dark:bg-slate-800 text-[#1A2B3C] dark:text-white border-l-4 border-[#1A2B3C] dark:border-blue-500 font-['Inter'] text-xs font-semibold" href="#">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">explore</span>
+                Live Map
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded font-['Inter'] text-xs font-semibold transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-lg">description</span>
+                Special Reports
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded font-['Inter'] text-xs font-semibold transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-lg">warning</span>
+                Alert History
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded font-['Inter'] text-xs font-semibold transition-all duration-150" href="#">
+<span class="material-symbols-outlined text-lg">download</span>
+                Data Exports
+            </a>
+</nav>
+<div class="mt-auto px-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 rounded font-['Inter'] text-xs font-semibold" href="#">
+<span class="material-symbols-outlined text-lg">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 rounded font-['Inter'] text-xs font-semibold" href="#">
+<span class="material-symbols-outlined text-lg">check_circle</span>
+                System Status
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 p-container-padding">
+<div class="max-w-[1600px] mx-auto space-y-card-gap">
+<!-- Page Header -->
+<div class="flex items-end justify-between mb-2">
+<div>
+<h1 class="font-h1 text-h1 text-on-background">Maritime Monitoring Dashboard</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Real-time environmental data for West Coast Command Sector A-12</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sm">refresh</span>
+                        Refresh Data
+                    </button>
+<button class="bg-surface-container-high text-on-background border border-outline-variant px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 hover:bg-surface-dim transition-colors">
+<span class="material-symbols-outlined text-sm">print</span>
+                        Export PDF
+                    </button>
+</div>
+</div>
+<!-- Top Row: Map and Special Reports -->
+<div class="grid grid-cols-12 gap-card-gap">
+<!-- Map Visualization -->
+<div class="col-span-12 xl:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="px-4 py-3 border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">map</span>
+<h2 class="font-h2 text-h2">Geospatial Overlay</h2>
+</div>
+<div class="flex gap-1">
+<button class="p-1 hover:bg-slate-100 rounded transition-colors"><span class="material-symbols-outlined text-sm">zoom_in</span></button>
+<button class="p-1 hover:bg-slate-100 rounded transition-colors"><span class="material-symbols-outlined text-sm">fullscreen</span></button>
+</div>
+</div>
+<div class="h-[400px] relative bg-slate-200">
+<img class="w-full h-full object-cover" data-alt="A sophisticated maritime radar map showing coastal topography with data overlays. Multiple vessel icons move along shipping lanes represented by glowing lines. The color scheme is professional, featuring deep navies, slate grays, and highlight accents in sea blue and warning amber. The image has a sharp, digital command center aesthetic with high clarity and a modern UI overlay." data-location="West Sea Coast South Korea" src="https://lh3.googleusercontent.com/aida/ADBb0uhoER53K4rFNSjoZwqqOMl-dyQD3U1ggxEDPJugLqLjciYCjHp9_Tg-63lx8z11F6WMppmP6P__v1LxZWA6YJaQHceaZGl-QHtqnNSlmwOW4WHjWVeM8d2r84pwKK9ixKgQGn5pGEXpF-oRqH8hK6rfolvR-vsbkaRAtMBZWhZh3ElblFhLgcHwNQaDOa8xBFu9KQLNfbG298Er7TeISvJQhmMOLs8dndcJjl5HnW58V9LikWasa_zHnVkwVwvlBu_c-jAgQPa2"/>
+<!-- Map Overlay Chips -->
+<div class="absolute bottom-4 left-4 flex flex-col gap-2">
+<div class="bg-white/90 backdrop-blur border border-slate-200 p-3 rounded shadow-lg flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="text-[11px] font-bold text-on-background uppercase tracking-wider">Active Vessels: 24</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-error"></div>
+<span class="text-[11px] font-bold text-on-background uppercase tracking-wider">Warnings: 2</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sea Area Special Reports Section -->
+<div class="col-span-12 xl:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col">
+<div class="px-4 py-3 border-b border-outline-variant flex items-center justify-between bg-white">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">campaign</span>
+<h2 class="font-h2 text-h2">해역별 기상특보 (Special Reports)</h2>
+</div>
+</div>
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-slate-50 border-b border-outline-variant">
+<tr>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">해역 (Region)</th>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">상태 (Status)</th>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">발표 (Issued)</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="bg-error-container/20">
+<td class="font-table-cell text-table-cell p-3">서해남부북쪽안쪽먼바다</td>
+<td class="p-3">
+<span class="px-2 py-0.5 rounded-full bg-error text-white font-bold text-[10px] uppercase">풍랑주의보</span>
+</td>
+<td class="font-table-cell text-table-cell p-3 text-on-surface-variant">24.10.15 11:00</td>
+</tr>
+<tr>
+<td class="font-table-cell text-table-cell p-3">서해중부앞바다</td>
+<td class="p-3">
+<span class="px-2 py-0.5 rounded-full bg-amber-500 text-white font-bold text-[10px] uppercase">강풍주의보</span>
+</td>
+<td class="font-table-cell text-table-cell p-3 text-on-surface-variant">24.10.15 09:30</td>
+</tr>
+<tr class="bg-slate-50/50">
+<td class="font-table-cell text-table-cell p-3">서해북부앞바다</td>
+<td class="p-3">
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-bold text-[10px] uppercase">해제</span>
+</td>
+<td class="font-table-cell text-table-cell p-3 text-on-surface-variant">24.10.15 08:00</td>
+</tr>
+<tr>
+<td class="font-table-cell text-table-cell p-3">남해동부앞바다</td>
+<td class="p-3">
+<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-bold text-[10px] uppercase">평상시</span>
+</td>
+<td class="font-table-cell text-table-cell p-3 text-on-surface-variant">24.10.15 06:00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-3 bg-surface-container text-center">
+<button class="text-[11px] font-bold text-primary hover:underline uppercase tracking-widest">View Historical Archive</button>
+</div>
+</div>
+</div>
+<!-- Weather Information Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="px-4 py-3 border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">air</span>
+<h2 class="font-h2 text-h2">기상정보 (Real-time Meteorological Data)</h2>
+</div>
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="text-[10px] font-semibold text-slate-500 uppercase">Operational</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-error"></span>
+<span class="text-[10px] font-semibold text-slate-500 uppercase">Threshold Violation</span>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[1000px]">
+<thead>
+<tr class="bg-slate-50 border-b border-outline-variant">
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">시간 (Time)</th>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">구분 (Type)</th>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">지점 (Station)</th>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">풍향 (Dir)</th>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">풍속 (Speed)</th>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">순간풍속 (Gust)</th>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">유의파고 (Wave)</th>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">최대파고 (Max)</th>
+<th class="font-table-header text-table-header text-on-surface-variant p-3 uppercase">시정 (Vis)</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="font-table-cell text-table-cell p-3">14:00</td>
+<td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold">AWS</span></td>
+<td class="font-table-cell text-table-cell p-3 font-bold">인천항 (Incheon)</td>
+<td class="p-3"><span class="flex items-center gap-1">NW <span class="material-symbols-outlined text-xs">north_west</span></span></td>
+<td class="font-table-cell text-table-cell p-3">8.4 m/s</td>
+<td class="font-table-cell text-table-cell p-3 text-error font-bold">12.1 m/s</td>
+<td class="font-table-cell text-table-cell p-3">1.2 m</td>
+<td class="font-table-cell text-table-cell p-3">1.8 m</td>
+<td class="font-table-cell text-table-cell p-3">15.2 km</td>
+</tr>
+<tr class="bg-slate-50/30 hover:bg-slate-50 transition-colors">
+<td class="font-table-cell text-table-cell p-3">14:00</td>
+<td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold">BUOY</span></td>
+<td class="font-table-cell text-table-cell p-3 font-bold">덕적도 (Deokjeok)</td>
+<td class="p-3"><span class="flex items-center gap-1">W <span class="material-symbols-outlined text-xs">west</span></span></td>
+<td class="font-table-cell text-table-cell p-3">10.2 m/s</td>
+<td class="font-table-cell text-table-cell p-3">14.5 m/s</td>
+<td class="font-table-cell text-table-cell p-3 text-error font-bold">2.8 m</td>
+<td class="font-table-cell text-table-cell p-3">4.1 m</td>
+<td class="font-table-cell text-table-cell p-3">8.4 km</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="font-table-cell text-table-cell p-3">14:00</td>
+<td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold">AWS</span></td>
+<td class="font-table-cell text-table-cell p-3 font-bold">평택항 (Pyeongtaek)</td>
+<td class="p-3"><span class="flex items-center gap-1">NW <span class="material-symbols-outlined text-xs">north_west</span></span></td>
+<td class="font-table-cell text-table-cell p-3">6.1 m/s</td>
+<td class="font-table-cell text-table-cell p-3">9.0 m/s</td>
+<td class="font-table-cell text-table-cell p-3">0.8 m</td>
+<td class="font-table-cell text-table-cell p-3">1.2 m</td>
+<td class="font-table-cell text-table-cell p-3">20.0 km</td>
+</tr>
+<tr class="bg-slate-50/30 hover:bg-slate-50 transition-colors">
+<td class="font-table-cell text-table-cell p-3">13:00</td>
+<td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-[10px] font-bold">BUOY</span></td>
+<td class="font-table-cell text-table-cell p-3 font-bold">외연도 (Oeyeondo)</td>
+<td class="p-3"><span class="flex items-center gap-1">N <span class="material-symbols-outlined text-xs">north</span></span></td>
+<td class="font-table-cell text-table-cell p-3">12.5 m/s</td>
+<td class="font-table-cell text-table-cell p-3 text-error font-bold">18.2 m/s</td>
+<td class="font-table-cell text-table-cell p-3">3.5 m</td>
+<td class="font-table-cell text-table-cell p-3">5.2 m</td>
+<td class="font-table-cell text-table-cell p-3">4.2 km</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Tide Tables Section -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="px-4 py-3 border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">water</span>
+<h2 class="font-h2 text-h2">조석표 (Tide Tables - Port Authorities)</h2>
+</div>
+</div>
+<div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Tide Card 1 -->
+<div class="bg-surface p-4 border border-outline-variant rounded-lg">
+<div class="flex justify-between items-center mb-3">
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Incheon Port</span>
+<span class="material-symbols-outlined text-primary text-sm">anchor</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-end border-b border-dashed border-slate-200 pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-lg">arrow_upward</span>
+<span class="text-xs font-semibold">High Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">04:22</div>
+<div class="text-[10px] text-on-surface-variant font-medium">842 cm</div>
+</div>
+</div>
+<div class="flex justify-between items-end border-b border-dashed border-slate-200 pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">arrow_downward</span>
+<span class="text-xs font-semibold">Low Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">10:45</div>
+<div class="text-[10px] text-on-surface-variant font-medium">102 cm</div>
+</div>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-lg">arrow_upward</span>
+<span class="text-xs font-semibold">High Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">16:48</div>
+<div class="text-[10px] text-on-surface-variant font-medium">865 cm</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Tide Card 2 -->
+<div class="bg-surface p-4 border border-outline-variant rounded-lg">
+<div class="flex justify-between items-center mb-3">
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Pyeongtaek Port</span>
+<span class="material-symbols-outlined text-primary text-sm">anchor</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-end border-b border-dashed border-slate-200 pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-lg">arrow_upward</span>
+<span class="text-xs font-semibold">High Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">04:58</div>
+<div class="text-[10px] text-on-surface-variant font-medium">780 cm</div>
+</div>
+</div>
+<div class="flex justify-between items-end border-b border-dashed border-slate-200 pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">arrow_downward</span>
+<span class="text-xs font-semibold">Low Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">11:20</div>
+<div class="text-[10px] text-on-surface-variant font-medium">124 cm</div>
+</div>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-lg">arrow_upward</span>
+<span class="text-xs font-semibold">High Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">17:25</div>
+<div class="text-[10px] text-on-surface-variant font-medium">812 cm</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Tide Card 3 -->
+<div class="bg-surface p-4 border border-outline-variant rounded-lg">
+<div class="flex justify-between items-center mb-3">
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Daesan Port</span>
+<span class="material-symbols-outlined text-primary text-sm">anchor</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-end border-b border-dashed border-slate-200 pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-lg">arrow_upward</span>
+<span class="text-xs font-semibold">High Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">05:12</div>
+<div class="text-[10px] text-on-surface-variant font-medium">650 cm</div>
+</div>
+</div>
+<div class="flex justify-between items-end border-b border-dashed border-slate-200 pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">arrow_downward</span>
+<span class="text-xs font-semibold">Low Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">11:45</div>
+<div class="text-[10px] text-on-surface-variant font-medium">85 cm</div>
+</div>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-lg">arrow_upward</span>
+<span class="text-xs font-semibold">High Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">17:40</div>
+<div class="text-[10px] text-on-surface-variant font-medium">678 cm</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Tide Card 4 -->
+<div class="bg-surface p-4 border border-outline-variant rounded-lg">
+<div class="flex justify-between items-center mb-3">
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Gunsan Port</span>
+<span class="material-symbols-outlined text-primary text-sm">anchor</span>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-end border-b border-dashed border-slate-200 pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-lg">arrow_upward</span>
+<span class="text-xs font-semibold">High Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">05:45</div>
+<div class="text-[10px] text-on-surface-variant font-medium">540 cm</div>
+</div>
+</div>
+<div class="flex justify-between items-end border-b border-dashed border-slate-200 pb-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-lg">arrow_downward</span>
+<span class="text-xs font-semibold">Low Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">12:15</div>
+<div class="text-[10px] text-on-surface-variant font-medium">52 cm</div>
+</div>
+</div>
+<div class="flex justify-between items-end">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-lg">arrow_upward</span>
+<span class="text-xs font-semibold">High Tide</span>
+</div>
+<div class="text-right">
+<div class="font-bold text-sm">18:12</div>
+<div class="text-[10px] text-on-surface-variant font-medium">562 cm</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual FAB (Only on Dashboard) -->
+<button class="fixed bottom-6 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-transform active:scale-95 z-50">
+<span class="material-symbols-outlined text-2xl">add_alert</span>
+</button>
+</body></html>

@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>KMA Buoy 우선 전체목록 정리</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260506al">
+  </head>
+  <body>
+    <main class="page-shell">
+      <nav class="page-nav" aria-label="화면 전환">
+        <a href="/query1" class="nav-link">기상정보</a>
+        <a href="/area-warnings" class="nav-link">해역별 기상특보</a>
+        <a href="/tides" class="nav-link">조석표</a>
+        <a href="/overview" class="nav-link">기상종합</a>
+        <a href="/kma-buoy-compare" class="nav-link current">URL 정리</a>
+        <a href="/settings" class="nav-link">설정</a>
+      </nav>
+
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">KMA BUOY + SEA OBS 처리 흐름</p>
+          <h1>sea_obs 전체목록에 kma_buoy 최신값 우선 적용</h1>
+          <p class="subtitle"><code>sea_obs.php</code>를 전체 기준으로 쓰고, 같은 <code>STN</code>이 <code>kma_buoy.php</code>에도 있으면 <code>kma_buoy</code> 최신값으로 덮어씌운 최종 목록을 보여줍니다.</p>
+        </div>
+        <div class="meta-panel compare-meta-panel">
+          <div class="meta-item">
+            <span class="meta-label">요청 시각</span>
+            <strong>{{ requested_at }}</strong>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">요청 tm</span>
+            <strong>{{ request_tm }}</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="compare-grid">
+        <article class="table-card compare-card compare-card-full">
+          <div class="table-card-header">
+            <div>
+              <h2>호출 기준</h2>
+              <p>기본값은 현재 시각이고, 필요하면 <code>tm</code>만 바꿔서 바로 다시 확인할 수 있습니다.</p>
+            </div>
+          </div>
+          <form class="compare-form" method="get" action="/kma-buoy-compare">
+            <label class="compare-field compare-field-inline">
+              <span>tm</span>
+              <input class="compare-input" type="text" name="tm" value="{{ request_tm }}" inputmode="numeric">
+            </label>
+            <div class="compare-actions compare-actions-start">
+              <button type="submit" class="selection-button save">현재 기준 다시 조회</button>
+            </div>
+            <div class="compare-block compare-block-no-pad">
+              <div class="compare-label">실제 요청 URL</div>
+              <code class="compare-inline">{{ request_url }}</code>
+            </div>
+          </form>
+        </article>
+
+        <article class="table-card compare-card">
+          <div class="table-card-header">
+            <div>
+              <h2>병합 요약</h2>
+              <p>최종 전체목록을 만들 때 실제로 사용된 건수입니다.</p>
+            </div>
+          </div>
+          <div class="compare-summary-grid">
+            <div class="compare-summary-item">
+              <span class="meta-label">sea_obs 기준 시각</span>
+              <strong>{{ sea_obs_latest_hhmm or "-" }}</strong>
+            </div>
+            <div class="compare-summary-item">
+              <span class="meta-label">sea_obs 행 수</span>
+              <strong>{{ sea_obs_row_count }}</strong>
+            </div>
+            <div class="compare-summary-item">
+              <span class="meta-label">중복 STN 수</span>
+              <strong>{{ duplicate_station_count }}</strong>
+            </div>
+            <div class="compare-summary-item">
+              <span class="meta-label">최종 전체목록 행 수</span>
+              <strong>{{ combined_row_count }}</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="table-card compare-card">
+          <div class="table-card-header">
+            <div>
+              <h2>처리 규칙</h2>
+              <p>이 규칙대로 만들면 <code>query1</code>에 가까운 전체목록을 만들 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="compare-result-block compare-result-block-fill">
+            <ul class="compare-list">
+              <li><code>tm=현재시각</code>으로 <code>kma_buoy.php</code>를 한 번 호출합니다.</li>
+              <li><code>kma_buoy.php</code> 응답은 같은 <code>STN</code>끼리 묶고 가장 최근 <code>관측시각</code>만 남깁니다.</li>
+              <li><code>sea_obs.php</code>는 전체목록 기준으로 사용합니다.</li>
+              <li>같은 <code>STN</code>이 두 원천에 모두 있으면 <code>kma_buoy.php</code> 값을 우선 사용합니다.</li>
+              <li>겹치지 않는 <code>조위관측소 / 파고BUOY / 연안방재 / 등표</code>는 <code>sea_obs.php</code> 값이 그대로 남습니다.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="table-card compare-card compare-card-full">
+          <div class="table-card-header">
+            <div>
+              <h2>최종 전체목록</h2>
+              <p><code>sea_obs.php</code>를 기본으로 하고, 겹치는 STN만 <code>kma_buoy.php</code> 최신값으로 바꾼 결과입니다.</p>
+            </div>
+          </div>
+          <div class="table-scroll compare-scroll">
+            <table class="sheet-table compact compare-table">
+              <thead>
+                <tr>
+                  <th>표출원천</th>
+                  <th>STN</th>
+                  <th>구분</th>
+                  <th>관측소</th>
+                  <th>관측시각</th>
+                  <th>풍향</th>
+                  <th>풍속</th>
+                  <th>돌풍</th>
+                  <th>유의파고</th>
+                  <th>최대파고</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in combined_rows %}
+                  <tr>
+                    <td>{{ row.source }}</td>
+                    <td>{{ row.station_id }}</td>
+                    <td>{{ row.observation_type }}</td>
+                    <td class="sheet-name">{{ row.station_name }}</td>
+                    <td>{{ row.observed_hhmm }}</td>
+                    <td>{{ row.wind_direction }}</td>
+                    <td>{{ row.wind_speed }}</td>
+                    <td>{{ row.gust }}</td>
+                    <td>{{ row.wave_height }}</td>
+                    <td>{{ row.wave_height_max }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="table-card compare-card compare-card-full">
+          <div class="table-card-header">
+            <div>
+              <h2>kma_buoy 시각 분포</h2>
+              <p><code>kma_buoy.php</code> 원본에는 여러 시각이 섞여 있으므로, STN 기준 최신 추출이 필요한 이유를 바로 볼 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="table-scroll compare-scroll">
+            <table class="sheet-table compact compare-table">
+              <thead>
+                <tr>
+                  <th>관측시각</th>
+                  <th>원본 행 수</th>
+                  <th>STN 최신값으로 채택된 행 수</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in time_distribution %}
+                  <tr>
+                    <td>{{ item.hhmm }}</td>
+                    <td>{{ item.raw_count }}</td>
+                    <td>{{ item.latest_count }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="table-card compare-card compare-card-full">
+          <div class="table-card-header">
+            <div>
+              <h2>kma_buoy 최신값만 따로 보기</h2>
+              <p><code>kma_buoy.php</code> 안에서 STN별 최신행만 따로 뽑은 결과입니다.</p>
+            </div>
+          </div>
+          <div class="table-scroll compare-scroll">
+            <table class="sheet-table compact compare-table">
+              <thead>
+                <tr>
+                  <th>STN</th>
+                  <th>구분</th>
+                  <th>관측소</th>
+                  <th>관측시각</th>
+                  <th>풍향</th>
+                  <th>풍속</th>
+                  <th>돌풍</th>
+                  <th>유의파고</th>
+                  <th>최대파고</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in latest_rows %}
+                  <tr>
+                    <td>{{ row.station_id }}</td>
+                    <td>{{ row.observation_type }}</td>
+                    <td class="sheet-name">{{ row.station_name }}</td>
+                    <td>{{ row.observed_hhmm }}</td>
+                    <td>{{ row.wind_direction }}</td>
+                    <td>{{ row.wind_speed }}</td>
+                    <td>{{ row.gust }}</td>
+                    <td>{{ row.wave_height }}</td>
+                    <td>{{ row.wave_height_max }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="table-card compare-card compare-card-full">
+          <div class="table-card-header">
+            <div>
+              <h2>늦게 들어오는 STN</h2>
+              <p>최신 시각보다 이전 시각에 머문 STN입니다. 왜 어떤 값이 늦게 보이는지 확인할 때 유용합니다.</p>
+            </div>
+          </div>
+          <div class="table-scroll compare-scroll">
+            <table class="sheet-table compact compare-table">
+              <thead>
+                <tr>
+                  <th>STN</th>
+                  <th>구분</th>
+                  <th>관측소</th>
+                  <th>현재 채택 시각</th>
+                  <th>풍향</th>
+                  <th>풍속</th>
+                  <th>돌풍</th>
+                  <th>유의파고</th>
+                  <th>최대파고</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if lagging_rows %}
+                  {% for row in lagging_rows %}
+                    <tr>
+                      <td>{{ row.station_id }}</td>
+                      <td>{{ row.observation_type }}</td>
+                      <td class="sheet-name">{{ row.station_name }}</td>
+                      <td>{{ row.observed_hhmm }}</td>
+                      <td>{{ row.wind_direction }}</td>
+                      <td>{{ row.wind_speed }}</td>
+                      <td>{{ row.gust }}</td>
+                      <td>{{ row.wave_height }}</td>
+                      <td>{{ row.wave_height_max }}</td>
+                    </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="9">모든 STN이 가장 최신 시각으로 들어왔습니다.</td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="table-card compare-card compare-card-full">
+          <div class="table-card-header">
+            <div>
+              <h2>코드 형태</h2>
+              <p>앱에서는 아래 순서로 구현하면 됩니다.</p>
+            </div>
+          </div>
+          <div class="compare-result-grid compare-result-grid-single">
+            <section class="compare-result-block">
+              <h3>Python 흐름</h3>
+              <pre class="code-block">{{ python_code }}</pre>
+            </section>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
