@@ -2,6 +2,8 @@
 
 FastAPI 기반 내부용 기상 대시보드입니다.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/dla6154-dev/mokpo-weather-dashboard)
+
 ## 로컬 실행
 
 1. `python -m pip install -r requirements.txt`
