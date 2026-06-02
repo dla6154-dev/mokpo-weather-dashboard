@@ -115,6 +115,10 @@ class Query1SelectionPreference(DashboardModel):
     selected_keys: list[str] = Field(default_factory=list)
 
 
+class Query1ColumnSizePreference(DashboardModel):
+    column_sizes: dict[str, int] = Field(default_factory=dict)
+
+
 class AreaWarningEntry(DashboardModel):
     selection_key: str = ""
     area_code: str = ""

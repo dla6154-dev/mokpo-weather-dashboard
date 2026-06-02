@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>설정</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260507b">
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260514c">
   </head>
   <body>
     <main class="page-shell">
@@ -18,14 +18,13 @@
 
       <header class="page-header">
         <div>
-          <p class="eyebrow">시스템</p>
+          <p class="eyebrow">시스템 설정</p>
           <h1>설정</h1>
-          <p class="subtitle">API 조회 주기 및 브라우저 갱신 주기를 설정합니다.</p>
+          <p class="subtitle">API 조회 주기와 기상정보 열별 글자 크기를 이 화면에서 함께 관리합니다.</p>
         </div>
       </header>
 
       <section class="settings-layout">
-
         <article class="table-card settings-card warning-map-card">
           <div class="table-card-header">
             <div>
@@ -37,12 +36,7 @@
             </div>
           </div>
           <div class="warning-map-body">
-            <img
-              id="warning-map-img"
-              class="warning-map-img"
-              src="/api/kma/warning-map.png"
-              alt="특보 현황도"
-            >
+            <img id="warning-map-img" class="warning-map-img" src="/api/kma/warning-map.png" alt="특보 현황도">
           </div>
         </article>
 
@@ -71,50 +65,93 @@
                 <tr>
                   <td class="settings-label">기상상황부 서버 조회</td>
                   <td id="cur-dashboard" class="settings-cur">-</td>
-                  <td>
-                    <input id="inp-dashboard" class="settings-input" type="number" min="30" max="86400" step="30">
-                  </td>
+                  <td><input id="inp-dashboard" class="settings-input" type="number" min="30" max="86400" step="30"></td>
                   <td class="settings-unit">초</td>
                 </tr>
                 <tr>
                   <td class="settings-label">기상정보 서버 조회</td>
                   <td id="cur-query1" class="settings-cur">-</td>
-                  <td>
-                    <input id="inp-query1" class="settings-input" type="number" min="30" max="86400" step="30">
-                  </td>
+                  <td><input id="inp-query1" class="settings-input" type="number" min="30" max="86400" step="30"></td>
                   <td class="settings-unit">초</td>
                 </tr>
                 <tr>
                   <td class="settings-label">해역별 기상특보 서버 조회</td>
                   <td id="cur-area" class="settings-cur">-</td>
-                  <td>
-                    <input id="inp-area" class="settings-input" type="number" min="30" max="86400" step="30">
-                  </td>
+                  <td><input id="inp-area" class="settings-input" type="number" min="30" max="86400" step="30"></td>
                   <td class="settings-unit">초</td>
                 </tr>
                 <tr>
                   <td class="settings-label">조석표 서버 조회</td>
                   <td id="cur-tide" class="settings-cur">-</td>
-                  <td>
-                    <input id="inp-tide" class="settings-input" type="number" min="60" max="86400" step="60">
-                  </td>
+                  <td><input id="inp-tide" class="settings-input" type="number" min="60" max="86400" step="60"></td>
                   <td class="settings-unit">초</td>
                 </tr>
                 <tr class="settings-divider-row">
-                  <td class="settings-label">브라우저 → 서버 갱신 주기</td>
+                  <td class="settings-label">브라우저 자동 새로고침</td>
                   <td id="cur-client" class="settings-cur">-</td>
-                  <td>
-                    <input id="inp-client" class="settings-input" type="number" min="10" max="3600" step="10">
-                  </td>
+                  <td><input id="inp-client" class="settings-input" type="number" min="10" max="3600" step="10"></td>
                   <td class="settings-unit">초</td>
                 </tr>
               </tbody>
             </table>
 
             <p class="settings-note">
-              서버 조회 주기 변경은 현재 대기 중인 주기가 끝난 뒤 다음 회차부터 적용됩니다.<br>
-              브라우저 갱신 주기는 페이지를 새로고침해야 적용됩니다.
+              서버 조회 주기 변경은 현재 대기 중인 주기가 끝난 뒤 다음 주기부터 적용됩니다.<br>
+              브라우저 자동 새로고침 주기는 페이지를 새로고침하면 즉시 반영됩니다.
             </p>
+          </div>
+        </article>
+
+        <article class="table-card settings-card query1-column-card">
+          <div class="table-card-header">
+            <div>
+              <h2>기상정보 글자 크기</h2>
+              <p id="column-settings-status">현재 저장된 값을 불러왔습니다.</p>
+            </div>
+            <div class="settings-actions">
+              <button id="reset-column-sizes" class="settings-open-btn" type="button">기본값</button>
+              <button id="save-column-sizes" class="settings-save-btn" type="button">저장</button>
+            </div>
+          </div>
+          <div class="settings-body">
+            <table class="settings-table query1-column-settings-table">
+              <thead>
+                <tr>
+                  <th>열</th>
+                  <th>현재 값</th>
+                  <th>슬라이더</th>
+                  <th>직접 입력</th>
+                </tr>
+              </thead>
+              <tbody id="column-size-settings-body"></tbody>
+            </table>
+            <p class="settings-note">저장하면 기상정보 화면과 기상종합 안의 기상정보 표에도 같은 크기로 고정 반영됩니다.</p>
+          </div>
+        </article>
+
+        <article class="table-card example-card query1-column-preview-card">
+          <div class="table-card-header example-card-header">
+            <div>
+              <h2>기상정보 미리보기</h2>
+              <p>열별 글자 크기를 저장하기 전 즉시 확인할 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="sheet-table compact example-data-table query1-column-preview-table">
+              <thead>
+                <tr>
+                  <th class="q1-col q1-col-hhmm">시간</th>
+                  <th class="q1-col q1-col-observationType">구분</th>
+                  <th class="q1-col q1-col-stationName">관측소</th>
+                  <th class="q1-col q1-col-windDirection">풍향</th>
+                  <th class="q1-col q1-col-windSpeed">풍속</th>
+                  <th class="q1-col q1-col-gust">돌풍</th>
+                  <th class="q1-col q1-col-waveHeight">유의파고</th>
+                  <th class="q1-col q1-col-waveHeightMax">최대파고</th>
+                </tr>
+              </thead>
+              <tbody id="query1-column-preview-body"></tbody>
+            </table>
           </div>
         </article>
       </section>
@@ -122,7 +159,11 @@
 
     <script>
       window.__SETTINGS__ = {{ settings_json | safe }};
+      window.__QUERY1_COLUMN_DEFS__ = {{ column_defs_json | safe }};
+      window.__QUERY1_COLUMN_SIZES__ = {{ column_sizes_json | safe }};
+      window.__QUERY1_COLUMN_SAMPLE_SNAPSHOT__ = {{ snapshot_json | safe }};
     </script>
-    <script src="/static/settings.js?v=20260507b"></script>
+    <script src="/static/settings.js?v=20260514c"></script>
+    <script src="/static/query1_columns.js?v=20260520a"></script>
   </body>
 </html>

@@ -14,10 +14,42 @@ from fastapi.templating import Jinja2Templates
 
 from .clients import WeatherApiClient
 from .config import AppSettings, load_settings
-from .models import Query1Row, Query1SelectionPreference
+from .models import Query1ColumnSizePreference, Query1Row, Query1SelectionPreference
 from .parsers import degrees_to_compass, normalize_query1_numeric, parse_query1_rows
 from .service import AreaWarningBuilder, AreaWarningService, DashboardService, Query1Service
 from .tide_service import TideService
+
+QUERY1_COLUMN_DEFS = [
+    {"key": "hhmm", "label": "시간"},
+    {"key": "observationType", "label": "구분"},
+    {"key": "stationName", "label": "관측소"},
+    {"key": "windDirection", "label": "풍향"},
+    {"key": "windSpeed", "label": "풍속"},
+    {"key": "gust", "label": "돌풍"},
+    {"key": "waveHeight", "label": "유의파고"},
+    {"key": "waveHeightMax", "label": "최대파고"},
+]
+QUERY1_COLUMN_SIZE_DEFAULTS = {column["key"]: 13 for column in QUERY1_COLUMN_DEFS}
+QUERY1_COLUMN_SIZE_MIN = 10
+QUERY1_COLUMN_SIZE_MAX = 32
+SHIPINFO_FIXED_AREA_SELECTION_KEYS = [
+    "22A30105",  # 3. 전남남부서해앞바다
+    "12A30212",  # 5. 서해남부남쪽안쪽먼바다
+    "12B10201",  # 7. 남해서부서쪽먼바다
+    "12B10302",  # 8. 제주도북부앞바다
+    "12B10100",  # 6. 남해서부앞바다
+]
+SHIPINFO_FIXED_QUERY1_SELECTION_KEYS = [
+    "C:파고BUOY|22500|조도",      # 11
+    "C:파고BUOY|22449|진도",      # 13
+    "L:등표|959|해수서",          # 15
+    "C:파고BUOY|22481|맹골수도",   # 16
+    "B:BUOY|22297|가거도",        # 17
+    "B:BUOY|22184|추자도",        # 18
+    "C:파고BUOY|22457|제주항",     # 21
+    "N:조위관측소|690704|제주",    # 22
+    "등대/등표|1139001|하조도등대",  # 25
+]
 
 
 def _mask_auth_key(url: str, auth_key: str) -> str:
@@ -69,6 +101,156 @@ def _parse_compact_tm(value: str | None, timezone_name: str) -> datetime | None:
     except ValueError:
         return None
     return parsed.replace(tzinfo=ZoneInfo(timezone_name))
+
+
+def _normalize_query1_column_sizes(data: dict | None) -> dict[str, int]:
+    normalized: dict[str, int] = {}
+    for key, default in QUERY1_COLUMN_SIZE_DEFAULTS.items():
+        try:
+            raw_value = data.get(key, default) if isinstance(data, dict) else default
+            value = int(float(raw_value))
+        except (TypeError, ValueError):
+            value = default
+        normalized[key] = max(QUERY1_COLUMN_SIZE_MIN, min(QUERY1_COLUMN_SIZE_MAX, value))
+    return normalized
+
+
+def _format_compact_timestamp(value: str | None) -> str:
+    text = str(value or "").strip()
+    if len(text) != 12 or not text.isdigit():
+        return text
+    return f"{text[4:6]}/{text[6:8]} {text[8:10]}:{text[10:12]}"
+
+
+def _format_hhmm(value: str | None) -> str:
+    text = str(value or "").strip()
+    if len(text) == 4 and text.isdigit():
+        return f"{text[:2]}:{text[2:]}"
+    return text or "-"
+
+
+def _query1_selection_key(row: Query1Row) -> str:
+    return f"{row.observation_type}|{row.station_id}|{row.station_name}"
+
+
+def _observation_type_label(value: str) -> str:
+    text = str(value or "").strip()
+    return text.split(":", 1)[1] if ":" in text else text
+
+
+def _has_metric_value(value: str | None) -> bool:
+    text = str(value or "").strip()
+    return text not in {"", "-"}
+
+
+def _build_shipinfo_weather_metrics(row: Query1Row) -> list[dict[str, str]]:
+    type_label = _observation_type_label(row.observation_type)
+
+    if type_label == "파고BUOY":
+        return (
+            [{"label": "파고", "value": row.wave_height.strip()}]
+            if _has_metric_value(row.wave_height)
+            else []
+        )
+
+    metrics: list[dict[str, str]] = []
+
+    if _has_metric_value(row.wind_direction):
+        metrics.append({"label": "풍향", "value": row.wind_direction.strip()})
+    if _has_metric_value(row.wind_speed):
+        metrics.append({"label": "풍속", "value": row.wind_speed.strip()})
+
+    if type_label in {"BUOY", "조위관측소", "연안방재", "기상1호"} and _has_metric_value(row.gust):
+        metrics.append({"label": "돌풍", "value": row.gust.strip()})
+
+    if type_label == "BUOY":
+        if _has_metric_value(row.wave_height):
+            metrics.append({"label": "파고", "value": row.wave_height.strip()})
+        if _has_metric_value(row.wave_height_max):
+            metrics.append({"label": "최대파고", "value": row.wave_height_max.strip()})
+
+    if type_label in {"등표", "등대/등표"} and _has_metric_value(row.visibility):
+        metrics.append({"label": "가시거리", "value": row.visibility.strip()})
+
+    return metrics
+
+
+def _split_shipinfo_weather_metrics(
+    metrics: list[dict[str, str]]
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    wind_labels = {"풍향", "풍속", "돌풍"}
+    wind_metrics = [metric for metric in metrics if metric["label"] in wind_labels]
+    detail_metrics = [metric for metric in metrics if metric["label"] not in wind_labels]
+    return wind_metrics, detail_metrics
+
+
+def _warning_tone(level: str) -> str:
+    if "경보" in level:
+        return "danger"
+    if "주의" in level:
+        return "warning"
+    if "예비" in level:
+        return "info"
+    return "normal"
+
+
+def _build_shipinfo_warning_cards(snapshot) -> list[dict]:
+    entry_map = {entry.selection_key: entry for entry in snapshot.entries}
+    cards: list[dict] = []
+    for selection_key in SHIPINFO_FIXED_AREA_SELECTION_KEYS:
+        entry = entry_map.get(selection_key)
+        if entry is None:
+            continue
+        warnings = [
+            {
+                "title": f"{warning.warning_type}{warning.level}",
+                "command": warning.command,
+                "effective_at": _format_compact_timestamp(warning.effective_at),
+                "issued_at": _format_compact_timestamp(warning.issued_at),
+                "tone": _warning_tone(warning.level),
+            }
+            for warning in entry.warnings
+        ]
+        cards.append(
+            {
+                "area_label": entry.area_label,
+                "has_warning": bool(warnings),
+                "status_text": warnings[0]["title"] if warnings else "특보 없음",
+                "warnings": warnings,
+            }
+        )
+    return cards
+
+
+def _build_shipinfo_weather_cards(snapshot) -> list[dict]:
+    row_map = {_query1_selection_key(row): row for row in snapshot.rows}
+    cards: list[dict] = []
+    for selection_key in SHIPINFO_FIXED_QUERY1_SELECTION_KEYS:
+        row = row_map.get(selection_key)
+        if row is None:
+            continue
+        metrics = _build_shipinfo_weather_metrics(row)
+        wind_metrics, detail_metrics = _split_shipinfo_weather_metrics(metrics)
+        cards.append(
+            {
+                "station_name": row.station_name,
+                "type_label": _observation_type_label(row.observation_type),
+                "observed_at": _format_hhmm(row.hhmm),
+                "wind_metrics": wind_metrics,
+                "detail_metrics": detail_metrics,
+            }
+        )
+    return cards
+
+
+def _load_query1_column_sizes(settings: AppSettings) -> dict[str, int]:
+    path = settings.query1_column_sizes_path
+    if path.exists():
+        try:
+            return _normalize_query1_column_sizes(json.loads(path.read_text(encoding="utf-8")))
+        except Exception:
+            pass
+    return dict(QUERY1_COLUMN_SIZE_DEFAULTS)
 
 
 def _build_kma_buoy_compare_context(
@@ -237,6 +419,7 @@ def create_app(
     query1_snapshot_service = query1_service or Query1Service(app_settings, shared_client)
     area_warning_snapshot_service = area_warning_service or AreaWarningService(app_settings, shared_client)
     tide_snapshot_service = tide_service or TideService(app_settings, shared_client)
+    query1_column_sizes = _load_query1_column_sizes(app_settings)
     templates = Jinja2Templates(directory=str(app_settings.template_dir))
 
     @asynccontextmanager
@@ -292,8 +475,22 @@ def create_app(
                 "snapshot_json": json.dumps(snapshot_data.model_dump(mode="json", by_alias=True), ensure_ascii=False),
                 "client_refresh_seconds": app_settings.runtime_config.get("query1_refresh_seconds"),
                 "default_selection_json": json.dumps(app_settings.query1_default_selection, ensure_ascii=False),
+                "column_sizes_json": json.dumps(query1_column_sizes, ensure_ascii=False),
                 "embed": is_embed(request),
                 "preview_tm": preview_tm or "",
+            },
+        )
+
+    @app.get("/query1-columns", response_class=HTMLResponse)
+    async def query1_column_page(request: Request) -> HTMLResponse:
+        snapshot_data = query1_snapshot_service.get_snapshot()
+        return templates.TemplateResponse(
+            request,
+            "query1_columns.html",
+            {
+                "snapshot_json": json.dumps(snapshot_data.model_dump(mode="json", by_alias=True), ensure_ascii=False),
+                "column_sizes_json": json.dumps(query1_column_sizes, ensure_ascii=False),
+                "column_defs_json": json.dumps(QUERY1_COLUMN_DEFS, ensure_ascii=False),
             },
         )
 
@@ -391,6 +588,23 @@ def create_app(
             {
                 "client_refresh_seconds": app_settings.client_refresh_interval_seconds,
                 "layout_json": json.dumps(_load_overview_layout(), ensure_ascii=False),
+                "embed": is_embed(request),
+            },
+        )
+
+    @app.get("/shipinfo-summary", response_class=HTMLResponse)
+    async def shipinfo_summary_page(request: Request) -> HTMLResponse:
+        area_snapshot = area_warning_snapshot_service.get_snapshot()
+        query1_snapshot = query1_snapshot_service.get_snapshot()
+        return templates.TemplateResponse(
+            request,
+            "shipinfo_summary.html",
+            {
+                "warning_cards": _build_shipinfo_warning_cards(area_snapshot),
+                "weather_cards": _build_shipinfo_weather_cards(query1_snapshot),
+                "area_generated_at": area_snapshot.meta.generated_at.strftime("%Y-%m-%d %H:%M") if area_snapshot.meta.generated_at else "-",
+                "query_generated_at": query1_snapshot.meta.generated_at.strftime("%Y-%m-%d %H:%M") if query1_snapshot.meta.generated_at else "-",
+                "refresh_ms": max(15000, app_settings.client_refresh_interval_seconds * 1000),
             },
         )
 
@@ -473,6 +687,21 @@ def create_app(
         app_settings.query1_default_selection = selected_keys
         return Query1SelectionPreference(selected_keys=selected_keys)
 
+    @app.get("/api/query1/column-sizes")
+    async def get_query1_column_sizes():
+        return Query1ColumnSizePreference(column_sizes=query1_column_sizes)
+
+    @app.put("/api/query1/column-sizes")
+    async def save_query1_column_sizes(preference: Query1ColumnSizePreference):
+        normalized = _normalize_query1_column_sizes(preference.column_sizes)
+        app_settings.query1_column_sizes_path.write_text(
+            json.dumps(normalized, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        query1_column_sizes.clear()
+        query1_column_sizes.update(normalized)
+        return Query1ColumnSizePreference(column_sizes=dict(query1_column_sizes))
+
     @app.get("/api/area-warnings/snapshot")
     async def get_area_warning_snapshot(request: Request):
         preview_tm = request.query_params.get("tm")
@@ -510,11 +739,15 @@ def create_app(
 
     @app.get("/settings", response_class=HTMLResponse)
     async def settings_page(request: Request) -> HTMLResponse:
+        query1_snapshot = query1_snapshot_service.get_snapshot()
         return templates.TemplateResponse(
             request,
             "settings.html",
             {
                 "settings_json": json.dumps(app_settings.runtime_config.as_dict(), ensure_ascii=False),
+                "column_sizes_json": json.dumps(query1_column_sizes, ensure_ascii=False),
+                "column_defs_json": json.dumps(QUERY1_COLUMN_DEFS, ensure_ascii=False),
+                "snapshot_json": json.dumps(query1_snapshot.model_dump(mode="json", by_alias=True), ensure_ascii=False),
             },
         )
 

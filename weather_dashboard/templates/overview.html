@@ -4,10 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>기상종합</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260510b">
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260514f">
   </head>
-  <body>
-    <main class="page-shell overview-shell">
+  <body class="{% if embed %}embed-body{% endif %}">
+    <main class="page-shell overview-shell{% if embed %} embed-shell{% endif %}">
+      {% if not embed %}
       <nav class="page-nav" aria-label="화면 전환">
         <a href="/query1" class="nav-link">기상정보</a>
         <a href="/area-warnings" class="nav-link">해역별 기상특보</a>
@@ -16,6 +17,7 @@
         <a href="/settings" class="nav-link">설정</a>
         <button id="save-layout-btn" class="nav-save-btn" type="button">설정 저장</button>
       </nav>
+      {% endif %}
 
       <section id="overview-split" class="overview-split">
         <section id="overview-pane-stack" class="overview-pane overview-pane-stack">
@@ -61,7 +63,7 @@
             <iframe
               id="overview-bottom-frame"
               class="overview-pane-frame overview-subpane-frame"
-              src="/tides?embed=1&refresh=20260510b"
+              src="/tides?embed=1&refresh=20260514f"
               title="조석표"
               loading="eager"
             ></iframe>
@@ -104,6 +106,6 @@
       window.__CLIENT_REFRESH_SECONDS__ = {{ client_refresh_seconds }};
       window.__OVERVIEW_LAYOUT__ = {{ layout_json | safe }};
     </script>
-    <script src="/static/overview.js?v=20260510b"></script>
+    <script src="/static/overview.js?v=20260514f"></script>
   </body>
 </html>

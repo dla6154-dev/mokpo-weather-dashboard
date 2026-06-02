@@ -549,7 +549,7 @@ body.tides-embed-body {
 }
 
 .tide-card-grid.tide-card-grid-embed {
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;
   padding: 4px 8px 6px;
   align-content: start;
@@ -564,8 +564,8 @@ body.tides-embed-body {
 
 .tides-embed-shell .tide-card-grid.tide-card-grid-embed {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
-  padding: 4px 6px 4px;
+  gap: 6px;
+  padding: 4px 6px 6px;
 }
 
 .tides-embed-shell .tide-table-card {
@@ -574,21 +574,23 @@ body.tides-embed-body {
 }
 
 .tides-embed-shell .tide-table-card-header {
-  padding: 6px 8px 4px;
+  padding: 6px 8px 2px;
 }
 
 .tides-embed-shell .tide-table-card-header h3 {
   font-size: 13px;
 }
 
-.tides-embed-shell .tide-table-badge {
-  padding: 3px 6px;
-  font-size: 9px;
+.tides-embed-shell .tide-table-countdown {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .tides-embed-shell .tide-table-sheet th,
 .tides-embed-shell .tide-table-sheet td {
-  padding: 3px 7px;
+  padding: 4px 6px;
   font-size: 10px;
 }
 
@@ -601,16 +603,118 @@ body.tides-embed-body {
   font-size: 11px;
 }
 
-.tides-embed-shell .tide-table-sheet-embed td:first-child {
-  width: 38px;
+.tides-embed-shell .tide-table-sheet-embed-grid {
+  table-layout: fixed;
 }
 
-.tides-embed-shell .tide-table-sheet-embed td:nth-child(2) {
-  width: 48px;
+.tides-embed-shell .tide-table-sheet-embed-grid td {
+  width: 25%;
+  text-align: center;
+  line-height: 1.15;
 }
 
-.tides-embed-shell .tide-table-sheet-embed td {
-  line-height: 1.2;
+.tides-embed-shell .tide-embed-cell {
+  position: relative;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tides-embed-shell .tide-embed-label-cell {
+  font-size: 10px;
+  font-weight: 800;
+  color: #4b5c6d;
+  border-top: 1px solid rgba(23, 59, 93, 0.08);
+}
+
+.tides-embed-shell .tide-embed-value-cell {
+  border-top: 1px solid rgba(23, 59, 93, 0.08);
+}
+
+.tides-embed-shell .tide-embed-time,
+.tides-embed-shell .tide-embed-level {
+  display: block;
+}
+
+.tides-embed-shell .tide-embed-time {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.tides-embed-shell .tide-embed-level {
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #516272;
+}
+
+.tides-embed-shell .tide-embed-cell.high {
+  background: #fff8f7;
+  color: #d14b3d;
+}
+
+.tides-embed-shell .tide-embed-cell.low {
+  background: #f5f9ff;
+  color: #2563eb;
+}
+
+.tides-embed-shell .tide-embed-cell.high .tide-embed-time,
+.tides-embed-shell .tide-embed-cell.high .tide-embed-level {
+  color: #d14b3d;
+}
+
+.tides-embed-shell .tide-embed-cell.low .tide-embed-time,
+.tides-embed-shell .tide-embed-cell.low .tide-embed-level {
+  color: #2563eb;
+}
+
+.tides-embed-shell .tide-embed-cell.active.high {
+  background: #ffe7e3;
+  color: #c62828;
+  z-index: 1;
+}
+
+.tides-embed-shell .tide-embed-cell.active.low {
+  background: #dfeeff;
+  color: #1d4ed8;
+  z-index: 1;
+}
+
+.tides-embed-shell .tide-embed-cell.active.high .tide-embed-time,
+.tides-embed-shell .tide-embed-cell.active.high .tide-embed-level {
+  color: #c62828;
+}
+
+.tides-embed-shell .tide-embed-cell.active.low .tide-embed-time,
+.tides-embed-shell .tide-embed-cell.active.low .tide-embed-level {
+  color: #1d4ed8;
+}
+
+.tides-embed-shell .tide-embed-label-cell.active.high {
+  box-shadow:
+    inset 0 2px 0 #c62828,
+    inset 2px 0 0 #c62828,
+    inset -2px 0 0 #c62828;
+}
+
+.tides-embed-shell .tide-embed-value-cell.active.high {
+  box-shadow:
+    inset 0 -2px 0 #c62828,
+    inset 2px 0 0 #c62828,
+    inset -2px 0 0 #c62828;
+}
+
+.tides-embed-shell .tide-embed-label-cell.active.low {
+  box-shadow:
+    inset 0 2px 0 #1d4ed8,
+    inset 2px 0 0 #1d4ed8,
+    inset -2px 0 0 #1d4ed8;
+}
+
+.tides-embed-shell .tide-embed-value-cell.active.low {
+  box-shadow:
+    inset 0 -2px 0 #1d4ed8,
+    inset 2px 0 0 #1d4ed8,
+    inset -2px 0 0 #1d4ed8;
 }
 
 .tides-embed-shell .tide-line-card {
@@ -1217,7 +1321,7 @@ body.tides-embed-body {
 }
 
 .sheet-table.compact {
-  min-width: 980px;
+  min-width: 900px;
 }
 
 .sheet-table.area-warning-table {
@@ -1256,6 +1360,78 @@ body.tides-embed-body {
 .sheet-table .sheet-name {
   text-align: left;
   font-weight: 600;
+}
+
+.example-data-table {
+  --q1-font-hhmm: 13px;
+  --q1-font-observationType: 13px;
+  --q1-font-stationName: 13px;
+  --q1-font-windDirection: 13px;
+  --q1-font-windSpeed: 13px;
+  --q1-font-gust: 13px;
+  --q1-font-waveHeight: 13px;
+  --q1-font-waveHeightMax: 13px;
+  --q1-pad-y-hhmm: 8px;
+  --q1-pad-y-observationType: 8px;
+  --q1-pad-y-stationName: 8px;
+  --q1-pad-y-windDirection: 8px;
+  --q1-pad-y-windSpeed: 8px;
+  --q1-pad-y-gust: 8px;
+  --q1-pad-y-waveHeight: 8px;
+  --q1-pad-y-waveHeightMax: 8px;
+  --q1-pad-x-hhmm: 6px;
+  --q1-pad-x-observationType: 6px;
+  --q1-pad-x-stationName: 6px;
+  --q1-pad-x-windDirection: 6px;
+  --q1-pad-x-windSpeed: 6px;
+  --q1-pad-x-gust: 6px;
+  --q1-pad-x-waveHeight: 6px;
+  --q1-pad-x-waveHeightMax: 6px;
+}
+
+.example-data-table [class*="q1-col-"] {
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.example-data-table .q1-col-hhmm {
+  font-size: var(--q1-font-hhmm, 13px);
+  padding: var(--q1-pad-y-hhmm, 8px) var(--q1-pad-x-hhmm, 6px);
+}
+
+.example-data-table .q1-col-observationType {
+  font-size: var(--q1-font-observationType, 13px);
+  padding: var(--q1-pad-y-observationType, 8px) var(--q1-pad-x-observationType, 6px);
+}
+
+.example-data-table .q1-col-stationName {
+  font-size: var(--q1-font-stationName, 13px);
+  padding: var(--q1-pad-y-stationName, 8px) var(--q1-pad-x-stationName, 6px);
+}
+
+.example-data-table .q1-col-windDirection {
+  font-size: var(--q1-font-windDirection, 13px);
+  padding: var(--q1-pad-y-windDirection, 8px) var(--q1-pad-x-windDirection, 6px);
+}
+
+.example-data-table .q1-col-windSpeed {
+  font-size: var(--q1-font-windSpeed, 13px);
+  padding: var(--q1-pad-y-windSpeed, 8px) var(--q1-pad-x-windSpeed, 6px);
+}
+
+.example-data-table .q1-col-gust {
+  font-size: var(--q1-font-gust, 13px);
+  padding: var(--q1-pad-y-gust, 8px) var(--q1-pad-x-gust, 6px);
+}
+
+.example-data-table .q1-col-waveHeight {
+  font-size: var(--q1-font-waveHeight, 13px);
+  padding: var(--q1-pad-y-waveHeight, 8px) var(--q1-pad-x-waveHeight, 6px);
+}
+
+.example-data-table .q1-col-waveHeightMax {
+  font-size: var(--q1-font-waveHeightMax, 13px);
+  padding: var(--q1-pad-y-waveHeightMax, 8px) var(--q1-pad-x-waveHeightMax, 6px);
 }
 
 .sheet-table td.value-alert-green {
@@ -1369,6 +1545,12 @@ body.tides-embed-body {
   align-items: center;
   gap: 10px;
   margin-top: 10px;
+}
+
+.selection-font-btn {
+  margin-top: 10px;
+  width: 100%;
+  justify-content: center;
 }
 
 .selection-button {
@@ -1657,13 +1839,14 @@ body.tides-embed-body {
 }
 
 .overview-subpane-top {
-  height: 220px;
+  height: 200px;
+  min-height: 96px;
   flex-shrink: 0;
 }
 
 .overview-subpane-bottom {
-  flex: 0 0 400px;
-  min-height: 400px;
+  flex: 1 1 220px;
+  min-height: 140px;
 }
 
 .overview-h-divider {
@@ -1800,7 +1983,7 @@ body.tides-embed-body {
   pointer-events: none;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 720px) {
   .page-header,
   .side-by-side {
     grid-template-columns: 1fr;
@@ -1834,7 +2017,7 @@ body.tides-embed-body {
   }
 
   .overview-pane-frame {
-    min-height: 720px;
+    min-height: 420px;
   }
 
   .tide-card-grid {
@@ -1957,6 +2140,26 @@ body.tides-embed-body {
   font-size: 12px;
   color: var(--muted);
   line-height: 1.7;
+}
+
+.query1-column-layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 440px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.query1-column-card,
+.query1-column-preview-card {
+  max-width: none;
+}
+
+.query1-column-settings-table td:nth-child(3) {
+  width: 220px;
+}
+
+.query1-column-range {
+  width: 100%;
 }
 
 /* ── Warning map preview card ───────────────────── */
@@ -2559,6 +2762,10 @@ body.tides-embed-body {
 }
 
 @media (max-width: 1200px) {
+  .query1-column-layout {
+    grid-template-columns: 1fr;
+  }
+
   .tide-layout-preview-grid,
   .tide-preview-hero-grid,
   .tide-preview-monitor-grid,

@@ -12,6 +12,22 @@ const overviewRefreshSeconds = Number(window.__CLIENT_REFRESH_SECONDS__ || 30);
 const STORAGE_SPLIT = "overview-left-pct";
 const PCT_MIN = 10;
 const PCT_MAX = 90;
+const STACK_BREAKPOINT = 720;
+const TOP_MIN_PX = 96;
+const TOP_MAX_PX = 220;
+const TOP_MIN_RATIO = 0.18;
+const BOTTOM_MIN_PX = 140;
+const BOTTOM_MAX_PX = 280;
+const BOTTOM_MIN_RATIO = 0.28;
+
+let splitDragRaf = 0;
+let splitDragPendingPct = null;
+let topDragRaf = 0;
+let topDragPendingPx = null;
+
+function isStackedLayout() {
+  return window.matchMedia(`(max-width: ${STACK_BREAKPOINT}px)`).matches;
+}
 
 function clampPct(value) {
   return Math.min(Math.max(Math.round(value), PCT_MIN), PCT_MAX);
@@ -32,6 +48,34 @@ function setOverviewPaneTitle(element, baseTitle, generatedAt) {
   if (!element) return;
   const formatted = formatOverviewTitleTime(generatedAt);
   element.textContent = formatted ? `${baseTitle}(${formatted})` : baseTitle;
+}
+
+function scheduleSplitPct(value) {
+  splitDragPendingPct = value;
+  if (splitDragRaf) {
+    return;
+  }
+  splitDragRaf = window.requestAnimationFrame(() => {
+    if (splitDragPendingPct != null) {
+      setPct(splitDragPendingPct, false);
+    }
+    splitDragPendingPct = null;
+    splitDragRaf = 0;
+  });
+}
+
+function scheduleTopHeight(px) {
+  topDragPendingPx = px;
+  if (topDragRaf) {
+    return;
+  }
+  topDragRaf = window.requestAnimationFrame(() => {
+    if (topDragPendingPx != null) {
+      setTopH(topDragPendingPx, false);
+    }
+    topDragPendingPx = null;
+    topDragRaf = 0;
+  });
 }
 
 async function refreshOverviewPaneTitles() {
@@ -77,7 +121,7 @@ function restoreSavedPct() {
 }
 
 function startDrag(event) {
-  if (!splitEl || !dividerEl || window.matchMedia("(max-width: 980px)").matches) {
+  if (!splitEl || !dividerEl || isStackedLayout()) {
     return;
   }
   event.preventDefault();
@@ -86,7 +130,7 @@ function startDrag(event) {
   const rect = splitEl.getBoundingClientRect();
 
   function onMove(moveEvent) {
-    setPct(((moveEvent.clientX - rect.left) / rect.width) * 100, false);
+    scheduleSplitPct(((moveEvent.clientX - rect.left) / rect.width) * 100);
   }
 
   function onUp(upEvent) {
@@ -106,7 +150,7 @@ function startDrag(event) {
 }
 
 function startMouseDrag(event) {
-  if (!splitEl || !dividerEl || window.matchMedia("(max-width: 980px)").matches) {
+  if (!splitEl || !dividerEl || isStackedLayout()) {
     return;
   }
   event.preventDefault();
@@ -114,7 +158,7 @@ function startMouseDrag(event) {
   const rect = splitEl.getBoundingClientRect();
 
   function onMove(moveEvent) {
-    setPct(((moveEvent.clientX - rect.left) / rect.width) * 100, false);
+    scheduleSplitPct(((moveEvent.clientX - rect.left) / rect.width) * 100);
   }
 
   function onUp(upEvent) {
@@ -345,7 +389,7 @@ setInterval(refreshOverviewPaneTitles, overviewRefreshSeconds * 1000);
 
 // ── 위아래 분할 ──────────────────────────────────────────
 const STORAGE_TOP_H = "overview-top-height-px-v2";
-const DEFAULT_TOP_H = 220;
+const DEFAULT_TOP_H = 200;
 
 function getAvailableH() {
   if (!stackEl) return 0;
@@ -359,8 +403,8 @@ function getAvailableH() {
 function setTopH(px, persist = false) {
   if (!topPaneEl) return;
   const available = getAvailableH();
-  const min = Math.max(120, available * 0.15);
-  const minBottom = 380;
+  const min = Math.max(TOP_MIN_PX, Math.min(TOP_MAX_PX, available * TOP_MIN_RATIO));
+  const minBottom = Math.max(BOTTOM_MIN_PX, Math.min(BOTTOM_MAX_PX, available * BOTTOM_MIN_RATIO));
   const max = Math.max(min, available - minBottom);
   const clamped = Math.min(Math.max(Math.round(px), min), max);
   topPaneEl.style.height = `${clamped}px`;
@@ -384,7 +428,7 @@ function startHDrag(event) {
   const pt = Number.parseFloat(getComputedStyle(stackEl).paddingTop) || 0;
 
   function onMove(e) {
-    setTopH(e.clientY - rect.top - pt, false);
+    scheduleTopHeight(e.clientY - rect.top - pt);
   }
   function onUp(e) {
     setTopH(e.clientY - rect.top - pt, true);
@@ -405,7 +449,7 @@ function startHMouseDrag(event) {
   const pt = Number.parseFloat(getComputedStyle(stackEl).paddingTop) || 0;
 
   function onMove(e) {
-    setTopH(e.clientY - rect.top - pt, false);
+    scheduleTopHeight(e.clientY - rect.top - pt);
   }
 
   function onUp(e) {
@@ -435,6 +479,12 @@ if (stackEl && hDividerEl && topPaneEl) {
     localStorage.removeItem(STORAGE_TOP_H);
   });
 }
+
+window.addEventListener("resize", () => {
+  if (topPaneEl) {
+    setTopH(topPaneEl.getBoundingClientRect().height, false);
+  }
+});
 
 // ── 설정 저장 ────────────────────────────────────────────
 const saveBtn = document.getElementById("save-layout-btn");

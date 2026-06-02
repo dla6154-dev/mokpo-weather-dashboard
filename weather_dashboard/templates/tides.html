@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>조석표</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260510b">
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260514f">
   </head>
   <body class="{% if embed %}embed-body tides-embed-body{% endif %}">
     <main class="page-shell{% if embed %} embed-shell tides-embed-shell{% endif %}">
@@ -70,6 +70,9 @@
       window.__CLIENT_REFRESH_SECONDS__ = {{ client_refresh_seconds }};
       window.__TIDES_EMBED__ = {{ "true" if embed else "false" }};
     </script>
-    <script src="/static/tides.js?v=20260510b"></script>
+    <script src="/static/tides.js?v=20260514f"></script>
+    {% if embed %}
+    <script src="/static/tides_embed_override.js?v=20260514f"></script>
+    {% endif %}
   </body>
 </html>

@@ -6,14 +6,20 @@ from zoneinfo import ZoneInfo
 import requests
 
 from .config import AppSettings
+from .ssl_support import configure_ssl_defaults
 
 
 class WeatherApiClient:
     WRN_NOW_DATA_URL = "https://apihub.kma.go.kr/api/typ01/url/wrn_now_data.php"
 
     def __init__(self, settings: AppSettings) -> None:
+        configure_ssl_defaults()
         self.settings = settings
         self.session = requests.Session()
+        if self.settings.ca_bundle_path:
+            self.session.verify = self.settings.ca_bundle_path
+        else:
+            self.session.verify = self.settings.ssl_verify
 
     def _get_text(self, url: str) -> str:
         response = self.session.get(url, timeout=self.settings.request_timeout_seconds)

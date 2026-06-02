@@ -506,6 +506,71 @@ async function refreshSnapshot() {
   }
 }
 
+function getActiveEmbedTideIndex(points, currentMinutes) {
+  if (!points.length) {
+    return null;
+  }
+
+  let activeIndex = 0;
+  for (let index = 0; index < points.length; index += 1) {
+    if (points[index].minutes <= currentMinutes) {
+      activeIndex = index;
+    } else {
+      break;
+    }
+  }
+
+  return activeIndex;
+}
+
+function renderMiniStationCard(group, index, currentMinutes) {
+  const points = (group.points || [])
+    .slice()
+    .sort((a, b) => a.minutes - b.minutes)
+    .slice(0, 4);
+
+  if (!points.length) {
+    return `<article class="tide-table-card tide-table-card-embed empty">
+      <div class="tide-table-card-header">
+        <h3>${escapeHtml(group.stationName)}</h3>
+      </div>
+      <div class="tide-table-empty">?꾩옱 議곗꽍 媛믪씠 ?놁뒿?덈떎.</div>
+    </article>`;
+  }
+
+  const activeIndex = getActiveEmbedTideIndex(points, currentMinutes);
+  const labelCells = points
+    .map((point, pointIndex) => {
+      const toneClass = point.tideType === "怨좎“" ? "high" : "low";
+      const activeClass = pointIndex === activeIndex ? ` active ${toneClass}` : "";
+      return `<td class="tide-embed-cell tide-embed-label-cell${activeClass}">${escapeHtml(point.tideType)}</td>`;
+    })
+    .join("");
+
+  const valueCells = points
+    .map((point, pointIndex) => {
+      const toneClass = point.tideType === "怨좎“" ? "high" : "low";
+      const activeClass = pointIndex === activeIndex ? ` active ${toneClass}` : "";
+      return `<td class="tide-embed-cell tide-embed-value-cell${activeClass}">
+        <span class="tide-embed-time">${escapeHtml(point.timeStr)}</span>
+        <span class="tide-embed-level">${escapeHtml(`${formatLevel(point.levelCm)}cm`)}</span>
+      </td>`;
+    })
+    .join("");
+
+  return `<article class="tide-table-card tide-table-card-embed">
+    <div class="tide-table-card-header">
+      <h3>${escapeHtml(group.stationName)}</h3>
+    </div>
+    <table class="tide-table-sheet tide-table-sheet-embed-grid" aria-label="${escapeHtml(group.stationName)} 議곗꽍 ?쒓컙?쒗몴">
+      <tbody>
+        <tr>${labelCells}</tr>
+        <tr>${valueCells}</tr>
+      </tbody>
+    </table>
+  </article>`;
+}
+
 renderSnapshot(initialSnapshot);
 setInterval(refreshSnapshot, refreshSeconds * 1000);
 setInterval(() => renderSnapshot(latestSnapshot), 60 * 1000);

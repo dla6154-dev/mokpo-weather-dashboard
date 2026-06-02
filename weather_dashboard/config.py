@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -89,6 +90,20 @@ def _read_area_warning_regions(path: Path) -> list[dict[str, str]]:
     return entries
 
 
+def _runtime_base_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent.parent
+
+
+def _resource_base_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            return Path(meipass)
+    return Path(__file__).resolve().parent.parent
+
+
 @dataclass(slots=True)
 class AppSettings:
     base_dir: Path
@@ -114,6 +129,8 @@ class AppSettings:
     area_warning_default_selection: list[str]
     tide_service_key: str
     runtime_config: RuntimeConfig
+    ssl_verify: bool = True
+    ca_bundle_path: str = ""
 
     @property
     def tide_snapshot_cache_path(self) -> Path:
@@ -144,6 +161,10 @@ class AppSettings:
         return self.state_dir / "query1_default_selection.json"
 
     @property
+    def query1_column_sizes_path(self) -> Path:
+        return self.state_dir / "query1_column_sizes.json"
+
+    @property
     def area_warning_default_selection_path(self) -> Path:
         return self.state_dir / "area_warning_default_selection.json"
 
@@ -169,15 +190,19 @@ class AppSettings:
 
 
 def load_settings() -> AppSettings:
-    base_dir = Path(__file__).resolve().parent.parent
+    base_dir = _runtime_base_dir()
+    resource_dir = _resource_base_dir()
     _load_dotenv(base_dir / ".env")
 
-    package_dir = base_dir / "weather_dashboard"
+    package_dir = resource_dir / "weather_dashboard"
     config_dir = package_dir / "config"
     state_dir = Path(os.getenv("DASHBOARD_STATE_DIR", str(base_dir / "dashboard_state")))
     cache_dir = Path(os.getenv("DASHBOARD_CACHE_DIR", str(base_dir / "dashboard_cache")))
     state_dir.mkdir(parents=True, exist_ok=True)
     cache_dir.mkdir(parents=True, exist_ok=True)
+    area_warning_path = base_dir / "예보 구역.txt"
+    if not area_warning_path.exists():
+        area_warning_path = resource_dir / "예보 구역.txt"
 
     return AppSettings(
         base_dir=base_dir,
@@ -189,6 +214,8 @@ def load_settings() -> AppSettings:
         refresh_interval_seconds=int(os.getenv("DASHBOARD_REFRESH_SECONDS", "300")),
         client_refresh_interval_seconds=int(os.getenv("DASHBOARD_CLIENT_REFRESH_SECONDS", "30")),
         request_timeout_seconds=int(os.getenv("DASHBOARD_REQUEST_TIMEOUT_SECONDS", "30")),
+        ssl_verify=os.getenv("DASHBOARD_SSL_VERIFY", "true").strip().lower() not in {"0", "false", "no", "off"},
+        ca_bundle_path=os.getenv("DASHBOARD_CA_BUNDLE", "").strip(),
         timezone_name=os.getenv("DASHBOARD_TIMEZONE", "Asia/Seoul"),
         kma_auth_key=os.getenv("KMA_AUTH_KEY", ""),
         kma_pub_auth_key=os.getenv("KMA_PUB_AUTH_KEY", ""),
@@ -202,7 +229,7 @@ def load_settings() -> AppSettings:
             state_dir / "query1_default_selection.json",
             _read_json_if_exists(config_dir / "query1_default_selection.json", []),
         ),
-        area_warning_regions=_read_area_warning_regions(base_dir / "예보 구역.txt"),
+        area_warning_regions=_read_area_warning_regions(area_warning_path),
         area_warning_default_selection=_read_json_if_exists(
             state_dir / "area_warning_default_selection.json",
             _read_json_if_exists(config_dir / "area_warning_default_selection.json", []),
