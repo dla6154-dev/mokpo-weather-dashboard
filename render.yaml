@@ -2,17 +2,15 @@ services:
   - type: web
     name: mokpo-weather-dashboard
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    region: singapore
+    plan: free
+    buildCommand: pip install -r requirements-server.txt
+    startCommand: uvicorn weather_dashboard.app:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.10
-      - key: DASHBOARD_STATE_DIR
-        value: /var/data/state
-      - key: DASHBOARD_CACHE_DIR
-        value: /var/data/cache
       - key: DASHBOARD_TIMEZONE
         value: Asia/Seoul
       - key: KMA_COMMENTARY_STATION_ID
@@ -23,7 +21,11 @@ services:
         value: "30"
       - key: DASHBOARD_REQUEST_TIMEOUT_SECONDS
         value: "30"
-    disk:
-      name: mokpo-weather-dashboard-data
-      mountPath: /var/data
-      sizeGB: 1
+      - key: KMA_AUTH_KEY
+        sync: false
+      - key: KMA_PUB_AUTH_KEY
+        sync: false
+      - key: TIDE_SERVICE_KEY
+        sync: false
+      - key: MARINE_SERVICE_KEY_JSON
+        sync: false
