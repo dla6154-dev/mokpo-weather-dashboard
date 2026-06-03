@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>진도 운항관리 날씨 요약</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #eef4fb;
+        --panel: #ffffff;
+        --panel-border: #d7e3f3;
+        --text: #10233d;
+        --muted: #5b6f89;
+        --accent: #0f766e;
+        --accent-soft: #d8f3ef;
+        --warning: #f59e0b;
+        --warning-soft: #fff5d6;
+        --danger: #dc2626;
+        --danger-soft: #fee2e2;
+        --ok: #16a34a;
+        --ok-soft: #dcfce7;
+        --shadow: 0 20px 48px rgba(15, 35, 61, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Noto Sans KR", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .shell {
+        padding: 18px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .panel-header {
+        padding: 18px 20px 14px;
+        border-bottom: 1px solid var(--panel-border);
+        background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(241,247,255,0.95));
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      h1, h2, h3, p { margin: 0; }
+
+      .panel-title {
+        margin-top: 10px;
+        font-size: 22px;
+        font-weight: 800;
+      }
+
+      .panel-subtitle {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .panel-body {
+        padding: 16px;
+      }
+
+      .warning-list,
+      .weather-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .warning-card,
+      .weather-card {
+        border: 1px solid var(--panel-border);
+        border-radius: 20px;
+        background: #fbfdff;
+        padding: 14px;
+      }
+
+      .warning-top,
+      .weather-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .card-title {
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .card-meta {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .status-pill,
+      .tag-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .status-pill.ok {
+        background: var(--ok-soft);
+        color: var(--ok);
+      }
+
+      .status-pill.warning {
+        background: var(--warning-soft);
+        color: var(--warning);
+      }
+
+      .status-pill.danger {
+        background: var(--danger-soft);
+        color: var(--danger);
+      }
+
+      .warning-detail-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .warning-detail {
+        border-radius: 16px;
+        padding: 10px 12px;
+      }
+
+      .warning-detail.warning {
+        background: var(--warning-soft);
+      }
+
+      .warning-detail.danger {
+        background: var(--danger-soft);
+      }
+
+      .warning-detail.info,
+      .warning-detail.normal {
+        background: #edf4ff;
+      }
+
+      .warning-detail-title {
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .warning-detail-meta {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .wind-metrics {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .metric {
+        border-radius: 16px;
+        background: #f1f7ff;
+        padding: 10px 12px;
+      }
+
+      .metric-label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .metric-value {
+        margin-top: 4px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .meta-line {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 640px) {
+        .shell {
+          padding: 12px;
+        }
+
+        .panel-header {
+          padding: 16px;
+        }
+
+        .panel-title {
+          font-size: 19px;
+        }
+
+        .card-title {
+          font-size: 16px;
+        }
+
+        .metrics {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="stack">
+        <article class="panel">
+          <div class="panel-header">
+            <span class="eyebrow">고정형 특보</span>
+            <h1 class="panel-title">운항 특보 요약</h1>
+            <p class="panel-subtitle">선택한 해역만 고정으로 표시합니다.</p>
+            <p class="meta-line">업데이트: {{ area_generated_at }}</p>
+          </div>
+          <div class="panel-body">
+            <div class="warning-list">
+              {% for card in warning_cards %}
+              <section class="warning-card">
+                <div class="warning-top">
+                  <div>
+                    <h2 class="card-title">{{ card.area_label }}</h2>
+                    <p class="card-meta">해역별 기상특보 고정 항목</p>
+                  </div>
+                  <span class="status-pill {{ 'warning' if card.has_warning else 'ok' }}">{{ card.status_text }}</span>
+                </div>
+                {% if card.warnings %}
+                <div class="warning-detail-list">
+                  {% for warning in card.warnings %}
+                  <div class="warning-detail {{ warning.tone }}">
+                    <div class="warning-detail-title">{{ warning.title }} · {{ warning.command }}</div>
+                    <div class="warning-detail-meta">발효 {{ warning.effective_at }} · 발표 {{ warning.issued_at }}</div>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </section>
+              {% endfor %}
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <span class="eyebrow">고정형 기상정보</span>
+            <h2 class="panel-title">운항 관측 요약</h2>
+            <p class="panel-subtitle">선택한 관측소와 파고 지점만 1열 카드로 표시합니다.</p>
+            <p class="meta-line">업데이트: {{ query_generated_at }}</p>
+          </div>
+          <div class="panel-body">
+            <div class="weather-list">
+              {% for card in weather_cards %}
+              <section class="weather-card">
+                <div class="weather-top">
+                  <div>
+                    <h3 class="card-title">{{ card.station_name }}</h3>
+                    <p class="card-meta">{{ card.type_label }} · {{ card.observed_at }}</p>
+                  </div>
+                  <span class="tag-pill status-pill ok">{{ card.type_label }}</span>
+                </div>
+                {% if card.wind_metrics %}
+                <div class="wind-metrics" style="grid-template-columns: repeat({{ card.wind_metrics|length }}, minmax(0, 1fr));">
+                  {% for metric in card.wind_metrics %}
+                  <div class="metric">
+                    <div class="metric-label">{{ metric.label }}</div>
+                    <div class="metric-value">{{ metric.value }}</div>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+                {% if card.detail_metrics %}
+                <div class="metrics">
+                  {% for metric in card.detail_metrics %}
+                  <div class="metric">
+                    <div class="metric-label">{{ metric.label }}</div>
+                    <div class="metric-value">{{ metric.value }}</div>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </section>
+              {% endfor %}
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+    <script>
+      window.setTimeout(() => window.location.reload(), {{ refresh_ms }});
+    </script>
+  </body>
+</html>
