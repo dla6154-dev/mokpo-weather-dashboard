@@ -8,6 +8,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -437,6 +438,21 @@ def create_app(
             await dashboard_service.stop()
 
     app = FastAPI(title="목포 기상상황부 대시보드", lifespan=lifespan)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "https://shipinfo-system.netlify.app",
+            "https://dla6154-dev.github.io",
+            "https://dla6154-dev.github.io/ferry-dashboard",
+            "http://127.0.0.1:8000",
+            "http://127.0.0.1:8768",
+            "http://localhost:8000",
+            "http://localhost:8768",
+        ],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.mount("/static", StaticFiles(directory=str(app_settings.static_dir)), name="static")
 
     def is_embed(request: Request) -> bool:
