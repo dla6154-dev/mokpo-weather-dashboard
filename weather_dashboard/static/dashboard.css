@@ -33,8 +33,9 @@ body.embed-body {
 }
 
 body.tides-embed-body {
-  overflow: hidden;
-  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 100vh;
 }
 
 .page-shell {
@@ -563,9 +564,9 @@ body.tides-embed-body {
 }
 
 .tides-embed-shell .tide-card-grid.tide-card-grid-embed {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  padding: 4px 6px 6px;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 10px 12px 16px;
 }
 
 .tides-embed-shell .tide-table-card {
@@ -719,11 +720,12 @@ body.tides-embed-body {
 
 .tides-embed-shell .tide-line-card {
   border: 1px solid rgba(23, 59, 93, 0.1);
-  border-radius: 12px;
+  border-radius: 24px;
   background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-  padding: 7px 8px 8px;
-  min-height: 118px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
+  padding: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .tides-embed-shell .tide-line-card.empty {
@@ -732,26 +734,44 @@ body.tides-embed-body {
 
 .tides-embed-shell .tide-line-card-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 14px;
+}
+
+.tides-embed-shell .tide-line-card-header-graph {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.tides-embed-shell .tide-line-card-header-copy {
+  min-width: 0;
+}
+
+.tides-embed-shell .tide-line-eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.24em;
+  color: #94a3b8;
 }
 
 .tides-embed-shell .tide-line-station {
-  font-size: 14px;
-  font-weight: 800;
+  display: block;
+  font-size: 20px;
+  font-weight: 900;
   color: var(--accent);
 }
 
 .tides-embed-shell .tide-line-badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 7px;
+  padding: 9px 12px;
   border-radius: 999px;
   background: #edf3f8;
   color: var(--accent);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 800;
   white-space: nowrap;
 }
 
@@ -759,22 +779,21 @@ body.tides-embed-body {
   color: #64748b;
 }
 
-.tides-embed-shell .tide-line-summary {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-top: 5px;
-}
-
-.tides-embed-shell .tide-line-level {
-  font-size: 17px;
-  font-weight: 800;
-  color: var(--accent);
-}
-
-.tides-embed-shell .tide-line-phase {
-  font-size: 11px;
+.tides-embed-shell .tide-line-summary-text {
+  margin: 8px 0 0;
+  font-size: 15px;
   font-weight: 700;
+  color: #64748b;
+}
+
+.tides-embed-shell .tide-embed-graph-wrap {
+  padding: 18px 16px 14px;
+}
+
+.tides-embed-shell .tide-embed-graph-svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .tides-embed-shell .tide-preview-rail-wrap.embed-compact {
