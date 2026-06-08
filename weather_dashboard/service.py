@@ -828,6 +828,13 @@ TIDE_STATIONS = [
     ("SO_1264", "계마"),
 ]
 
+TIDE_STATIONS = [
+    ("SO_0555", "서망"),
+    ("SO_0702", "진도옥도"),
+    ("SO_0567", "쉬미"),
+    ("DT_0094", "서거차도"),
+]
+
 TIDE_REFRESH_SECONDS = 3600  # tide forecast changes daily; refresh once per hour
 
 

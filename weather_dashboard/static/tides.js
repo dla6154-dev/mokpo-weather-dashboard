@@ -16,6 +16,8 @@ const ACTIVE_DISPLAY_STATIONS = isEmbed
   ? ["목포", "계마", "서망"]
   : ["목포", "암태", "향화", "옥도", "서망", "계마"];
 
+const SHIPINFO_TIDE_DISPLAY_STATIONS = ["서망", "진도옥도", "쉬미", "서거차도"];
+
 let latestSnapshot = initialSnapshot;
 
 function escapeHtml(value) {
@@ -64,7 +66,7 @@ function formatRemainingMinutes(minutes) {
 
 function groupEntries(entries) {
   const map = new Map();
-  for (const stationName of ACTIVE_DISPLAY_STATIONS) {
+  for (const stationName of SHIPINFO_TIDE_DISPLAY_STATIONS) {
     map.set(stationName, { stationName, points: [] });
   }
 
@@ -87,7 +89,7 @@ function groupEntries(entries) {
     });
   }
 
-  return ACTIVE_DISPLAY_STATIONS.map((stationName) => {
+  return SHIPINFO_TIDE_DISPLAY_STATIONS.map((stationName) => {
     const group = map.get(stationName);
     group.points.sort((a, b) => a.minutes - b.minutes);
     return group;

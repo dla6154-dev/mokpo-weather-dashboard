@@ -73,15 +73,14 @@ def test_tide_builder_creates_four_points_for_each_station():
 
     assert result.snapshot.meta.stale is False
     assert result.snapshot.date_str == "2026년 05월 06일"
-    assert len(result.snapshot.entries) == 24
-    assert result.snapshot.entries[0].station_name == "목포"
+    assert len(result.snapshot.entries) == 16
     assert result.snapshot.entries[0].tide_type == "고조"
     assert result.snapshot.entries[0].time_str == "04:48"
     assert result.snapshot.entries[0].level_cm == 420.0
     assert result.snapshot.entries[1].tide_type == "저조"
-    assert result.snapshot.entries[-1].station_name == "계마"
-    assert sum(1 for entry in result.snapshot.entries if entry.station_name == "목포") == 4
-    assert len(result.statuses) == 6
+    assert len({entry.station_name for entry in result.snapshot.entries}) == 4
+    assert sum(1 for entry in result.snapshot.entries if entry.station_name == result.snapshot.entries[0].station_name) == 4
+    assert len(result.statuses) == 4
     assert all(source.ok for source in result.statuses)
 
 
