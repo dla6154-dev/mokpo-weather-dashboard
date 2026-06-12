@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 from weather_dashboard.config import AppSettings, RuntimeConfig
 from weather_dashboard.service import RefreshError
-from weather_dashboard.tide_service import TideBuilder
+from weather_dashboard.tide_service import TIDE_DAY_LABELS, TideBuilder
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -67,20 +67,23 @@ def make_settings() -> AppSettings:
     )
 
 
-def test_tide_builder_creates_four_points_for_each_station():
+def test_tide_builder_creates_three_days():
     builder = TideBuilder(make_settings(), FixtureClient())
     result = builder.build(datetime(2026, 5, 6, 0, 3, tzinfo=ZoneInfo("Asia/Seoul")))
 
     assert result.snapshot.meta.stale is False
     assert result.snapshot.date_str == "2026년 05월 06일"
     assert len(result.snapshot.entries) == 16
+    assert len(result.snapshot.days) == 3
+    assert [day.label for day in result.snapshot.days] == list(TIDE_DAY_LABELS)
+    assert result.snapshot.days[0].date_key == "20260506"
+    assert result.snapshot.days[1].date_key == "20260507"
+    assert result.snapshot.days[2].date_key == "20260508"
+    assert all(len(day.entries) == 16 for day in result.snapshot.days)
     assert result.snapshot.entries[0].tide_type == "고조"
-    assert result.snapshot.entries[0].time_str == "04:48"
-    assert result.snapshot.entries[0].level_cm == 420.0
     assert result.snapshot.entries[1].tide_type == "저조"
     assert len({entry.station_name for entry in result.snapshot.entries}) == 4
-    assert sum(1 for entry in result.snapshot.entries if entry.station_name == result.snapshot.entries[0].station_name) == 4
-    assert len(result.statuses) == 4
+    assert len(result.statuses) == 12
     assert all(source.ok for source in result.statuses)
 
 

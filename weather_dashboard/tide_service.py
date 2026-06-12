@@ -4,22 +4,20 @@ import asyncio
 import json
 import threading
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from .clients import WeatherApiClient
 from .config import AppSettings
-from .models import HealthResponse, SnapshotMeta, SourceStatus, TideEntry, TideSnapshot
+from .models import (
+    HealthResponse,
+    SnapshotMeta,
+    SourceStatus,
+    TideDaySnapshot,
+    TideEntry,
+    TideSnapshot,
+)
 from .service import RefreshError
-
-TIDE_STATIONS = [
-    ("DT_0007", "목포"),
-    ("SO_0631", "암태"),
-    ("SO_0565", "향화"),
-    ("SO_1248", "옥도"),
-    ("SO_0555", "서망"),
-    ("SO_1264", "계마"),
-]
 
 TIDE_STATIONS = [
     ("SO_0555", "서망"),
@@ -28,6 +26,7 @@ TIDE_STATIONS = [
     ("DT_0094", "서거차도"),
 ]
 
+TIDE_DAY_LABELS = ("오늘", "내일", "모레")
 TIDE_REFRESH_SECONDS = 3600
 
 
@@ -43,33 +42,50 @@ class TideBuilder:
         self.client = client
         self.tz = ZoneInfo(settings.timezone_name)
 
-    def build(
+    def _index_previous_entries(
         self,
-        now: datetime | None = None,
-        previous_snapshot: TideSnapshot | None = None,
-    ) -> TideBuildResult:
-        current = now or self.client.now()
-        if not self.settings.tide_service_key:
-            raise RefreshError("Missing environment variables: TIDE_SERVICE_KEY")
+        previous_snapshot: TideSnapshot | None,
+        fallback_date_key: str,
+    ) -> dict[str, dict[str, list[TideEntry]]]:
+        indexed: dict[str, dict[str, list[TideEntry]]] = {}
+        if not previous_snapshot:
+            return indexed
 
-        req_date = current.strftime("%Y%m%d")
-        statuses: list[SourceStatus] = []
-        entries: list[TideEntry] = []
-        fallback_used: list[str] = []
+        if previous_snapshot.days:
+            for day in previous_snapshot.days:
+                station_map = indexed.setdefault(day.date_key, {})
+                for entry in day.entries:
+                    station_map.setdefault(entry.station_name, []).append(entry)
+            return indexed
 
-        previous_entries_by_station: dict[str, list[TideEntry]] = {}
-        if previous_snapshot:
-            for entry in previous_snapshot.entries:
-                previous_entries_by_station.setdefault(entry.station_name, []).append(entry)
+        station_map = indexed.setdefault(fallback_date_key, {})
+        for entry in previous_snapshot.entries:
+            station_map.setdefault(entry.station_name, []).append(entry)
+        return indexed
+
+    def _build_day_snapshot(
+        self,
+        day_current: datetime,
+        label: str,
+        previous_entries_by_date: dict[str, dict[str, list[TideEntry]]],
+        statuses: list[SourceStatus],
+        fallback_used: list[str],
+    ) -> TideDaySnapshot:
+        req_date = day_current.strftime("%Y%m%d")
+        station_fallback_map = previous_entries_by_date.get(req_date, {})
+        day_entries: list[TideEntry] = []
 
         for obs_code, station_name in TIDE_STATIONS:
             started = datetime.now(self.tz)
+            source_name = f"tide_{obs_code}_{req_date}"
             try:
                 data = self.client.fetch_tide(obs_code, req_date)
                 items = data.get("body", {}).get("items", {}).get("item", [])
+                if isinstance(items, dict):
+                    items = [items]
                 statuses.append(
                     SourceStatus(
-                        name=f"tide_{obs_code}",
+                        name=source_name,
                         ok=True,
                         fetched_at=started,
                         record_count=len(items),
@@ -84,7 +100,7 @@ class TideBuilder:
                         level_cm = float(item.get("predcTdlvVl", ""))
                     except (TypeError, ValueError):
                         level_cm = None
-                    entries.append(
+                    day_entries.append(
                         TideEntry(
                             station_name=station_name,
                             tide_type=tide_type,
@@ -93,13 +109,13 @@ class TideBuilder:
                         )
                     )
             except Exception as exc:
-                fallback_entries = previous_entries_by_station.get(station_name, [])
+                fallback_entries = station_fallback_map.get(station_name, [])
                 if fallback_entries:
-                    entries.extend(fallback_entries)
-                    fallback_used.append(station_name)
+                    day_entries.extend(entry.model_copy(deep=True) for entry in fallback_entries)
+                    fallback_used.append(f"{label}:{station_name}")
                 statuses.append(
                     SourceStatus(
-                        name=f"tide_{obs_code}",
+                        name=source_name,
                         ok=False,
                         fetched_at=started,
                         record_count=len(fallback_entries) if fallback_entries else None,
@@ -107,18 +123,56 @@ class TideBuilder:
                     )
                 )
 
+        return TideDaySnapshot(
+            label=label,
+            date_key=req_date,
+            date_str=day_current.strftime("%Y년 %m월 %d일"),
+            entries=day_entries,
+        )
+
+    def build(
+        self,
+        now: datetime | None = None,
+        previous_snapshot: TideSnapshot | None = None,
+    ) -> TideBuildResult:
+        current = now or self.client.now()
+        if not self.settings.tide_service_key:
+            raise RefreshError("Missing environment variables: TIDE_SERVICE_KEY")
+
+        previous_entries_by_date = self._index_previous_entries(
+            previous_snapshot,
+            current.strftime("%Y%m%d"),
+        )
+
+        statuses: list[SourceStatus] = []
+        fallback_used: list[str] = []
+        day_snapshots: list[TideDaySnapshot] = []
+
+        for offset, label in enumerate(TIDE_DAY_LABELS):
+            day_current = current + timedelta(days=offset)
+            day_snapshot = self._build_day_snapshot(
+                day_current,
+                label,
+                previous_entries_by_date,
+                statuses,
+                fallback_used,
+            )
+            day_snapshots.append(day_snapshot)
+
         ok_count = sum(1 for status in statuses if status.ok)
         if ok_count == 0 and not fallback_used:
             errors = "; ".join(
                 f"{status.name}: {status.error}" for status in statuses if status.error
             ) or "No tide sources succeeded."
             raise RefreshError(f"All tide sources failed: {errors}")
-        if not entries:
+
+        today_snapshot = day_snapshots[0] if day_snapshots else TideDaySnapshot()
+        if not today_snapshot.entries and not any(day.entries for day in day_snapshots):
             raise RefreshError("Tide API returned no entries.")
 
         stale = bool(fallback_used)
         stale_reason = (
-            f"일부 지점 이전값 유지: {', '.join(fallback_used)}"
+            f"일부 지점 이전값 사용: {', '.join(fallback_used)}"
             if fallback_used
             else ""
         )
@@ -139,8 +193,9 @@ class TideBuilder:
                 snapshot_age_seconds=0,
                 missing_env_vars=[],
             ),
-            date_str=current.strftime("%Y년 %m월 %d일"),
-            entries=entries,
+            date_str=today_snapshot.date_str,
+            entries=today_snapshot.entries,
+            days=day_snapshots,
         )
         return TideBuildResult(snapshot=snapshot, statuses=statuses)
 
@@ -244,7 +299,7 @@ class TideService:
             if not self._snapshot:
                 meta = self._health.meta.model_copy(deep=True)
                 meta.snapshot_age_seconds = self._snapshot_age(meta.generated_at)
-                return TideSnapshot(meta=meta, date_str="", entries=[])
+                return TideSnapshot(meta=meta, date_str="", entries=[], days=[])
             snapshot = self._snapshot.model_copy(deep=True)
             snapshot.meta.snapshot_age_seconds = self._snapshot_age(snapshot.meta.generated_at)
             return snapshot

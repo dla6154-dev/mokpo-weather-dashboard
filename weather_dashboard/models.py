@@ -172,7 +172,15 @@ class TideEntry(DashboardModel):
     level_cm: float | None = None
 
 
+class TideDaySnapshot(DashboardModel):
+    label: str = ""
+    date_key: str = ""
+    date_str: str = ""
+    entries: list[TideEntry] = Field(default_factory=list)
+
+
 class TideSnapshot(DashboardModel):
     meta: SnapshotMeta
     date_str: str = ""
     entries: list[TideEntry] = Field(default_factory=list)
+    days: list[TideDaySnapshot] = Field(default_factory=list)
