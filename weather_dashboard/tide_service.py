@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import calendar as _calendar
 import json
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -198,6 +200,69 @@ class TideBuilder:
             days=day_snapshots,
         )
         return TideBuildResult(snapshot=snapshot, statuses=statuses)
+
+    def build_monthly(self, ym: str) -> dict:
+        """월별 조석 예보 데이터를 반환합니다. ym: YYYYMM (예: '202607')"""
+        year = int(ym[:4])
+        month = int(ym[4:6])
+        num_days = _calendar.monthrange(year, month)[1]
+
+        def _fetch(obs_code: str, station_name: str, req_date: str):
+            try:
+                data = self.client.fetch_tide(obs_code, req_date)
+                items = data.get("body", {}).get("items", {}).get("item", [])
+                if isinstance(items, dict):
+                    items = [items]
+                return station_name, req_date, items
+            except Exception:
+                return station_name, req_date, []
+
+        tasks = [
+            (obs_code, station_name, f"{year}{month:02d}{day_num:02d}")
+            for day_num in range(1, num_days + 1)
+            for obs_code, station_name in TIDE_STATIONS
+        ]
+
+        results: dict[str, dict[str, list]] = {}
+        with ThreadPoolExecutor(max_workers=10) as pool:
+            futures = {pool.submit(_fetch, *t): t for t in tasks}
+            for fut in as_completed(futures):
+                station_name, req_date, items = fut.result()
+                results.setdefault(req_date, {})[station_name] = items
+
+        days = []
+        for day_num in range(1, num_days + 1):
+            req_date = f"{year}{month:02d}{day_num:02d}"
+            day_dt = datetime(year, month, day_num, tzinfo=self.tz)
+            entries = []
+            for _obs_code, station_name in TIDE_STATIONS:
+                for item in results.get(req_date, {}).get(station_name, []):
+                    raw_dt = str(item.get("predcDt", ""))
+                    time_str = raw_dt[11:16] if len(raw_dt) >= 16 else raw_dt
+                    extr = str(item.get("extrSe", ""))
+                    tide_type = "고조" if extr in ("1", "3") else "저조" if extr in ("2", "4") else extr
+                    try:
+                        level_cm = float(item.get("predcTdlvVl", ""))
+                    except (TypeError, ValueError):
+                        level_cm = None
+                    entries.append({
+                        "stationName": station_name,
+                        "tideType": tide_type,
+                        "timeStr": time_str,
+                        "levelCm": level_cm,
+                    })
+            days.append({
+                "date": req_date,
+                "dateStr": day_dt.strftime("%Y년 %m월 %d일"),
+                "label": f"{month}월 {day_num}일",
+                "entries": entries,
+            })
+
+        return {
+            "ym": ym,
+            "generatedAt": datetime.now(self.tz).isoformat(),
+            "days": days,
+        }
 
 
 class TideService:

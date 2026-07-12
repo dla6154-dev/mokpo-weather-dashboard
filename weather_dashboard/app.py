@@ -753,6 +753,17 @@ def create_app(
     async def get_tide_health():
         return tide_snapshot_service.get_health()
 
+    @app.get("/api/tides/monthly")
+    async def get_tide_monthly(ym: str = ""):
+        now = shared_client.now()
+        target_ym = ym.strip() or now.strftime("%Y%m")
+        if not target_ym.isdigit() or len(target_ym) != 6:
+            raise HTTPException(status_code=400, detail="ym must be YYYYMM (e.g. 202607)")
+        if not app_settings.tide_service_key:
+            raise HTTPException(status_code=503, detail="TIDE_SERVICE_KEY not configured")
+        result = await asyncio.to_thread(tide_snapshot_service.builder.build_monthly, target_ym)
+        return result
+
     @app.get("/settings", response_class=HTMLResponse)
     async def settings_page(request: Request) -> HTMLResponse:
         query1_snapshot = query1_snapshot_service.get_snapshot()
