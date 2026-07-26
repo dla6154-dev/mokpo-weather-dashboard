@@ -122,6 +122,13 @@ class WeatherApiClient:
             f"?reg=&tmfc1={base}05&disp=1&help=0&authKey={self.settings.kma_pub_auth_key}"
         )
 
+    def fetch_sfc_obs(self, stn: int, tm: str) -> str:
+        """기상청 지상관측 시간자료 (kma_sfctm2) - STN별 온도/풍속/시정"""
+        return self._get_text(
+            "https://apihub.kma.go.kr/api/typ01/url/kma_sfctm2.php"
+            f"?tm={tm}&stn={stn}&help=0&authKey={self.settings.kma_auth_key}"
+        )
+
     def fetch_marine_json(self) -> str:
         return self._get_text(
             "http://marineweather.nmpnt.go.kr:8001/openWeatherNow.do"

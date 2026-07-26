@@ -764,6 +764,41 @@ def create_app(
         result = await asyncio.to_thread(tide_snapshot_service.builder.build_monthly, target_ym)
         return result
 
+    @app.get("/api/sfc/obs")
+    async def get_sfc_obs(stn: int = 268):
+        """지상관측 현재기상 (온도/풍속/시정) — STN 268 진도군 기본"""
+        now = shared_client.now()
+        # 정각 단위 (현재 시각의 정각)
+        tm = now.strftime("%Y%m%d%H") + "00"
+        def _fetch():
+            text = shared_client.fetch_sfc_obs(stn, tm)
+            for line in text.splitlines():
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                parts = line.split()
+                if len(parts) < 33:
+                    continue
+                try:
+                    ws = float(parts[3])   # WS: 풍속 m/s
+                    ta = float(parts[11])  # TA: 기온 °C
+                    vs = float(parts[32])  # VS: 시정 (10m 단위)
+                except (ValueError, IndexError):
+                    continue
+                ws_int = round(ws)
+                wind_range = f"{max(0, ws_int-1)}-{ws_int+1}"
+                vis_km = round(vs * 10 / 1000, 1)
+                if vis_km >= 10:
+                    vis_km = 10
+                return {
+                    "ok": True, "stn": stn, "tm": tm,
+                    "wind_speed": ws, "wind_range": wind_range,
+                    "temperature": ta,
+                    "visibility_km": vis_km,
+                }
+            return {"ok": False, "error": "데이터 없음", "stn": stn, "tm": tm}
+        return await asyncio.to_thread(_fetch)
+
     @app.get("/settings", response_class=HTMLResponse)
     async def settings_page(request: Request) -> HTMLResponse:
         query1_snapshot = query1_snapshot_service.get_snapshot()
