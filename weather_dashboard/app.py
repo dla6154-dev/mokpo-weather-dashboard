@@ -444,6 +444,7 @@ def create_app(
             "https://shipinfo-system.netlify.app",
             "https://dla6154-dev.github.io",
             "https://dla6154-dev.github.io/ferry-dashboard",
+            "https://vessel-inspection-app.pages.dev",
             "http://127.0.0.1:8000",
             "http://127.0.0.1:8768",
             "http://localhost:8000",
