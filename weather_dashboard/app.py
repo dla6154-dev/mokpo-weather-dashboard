@@ -800,6 +800,30 @@ def create_app(
             return {"ok": False, "error": "데이터 없음", "stn": stn, "tm": tm}
         return await asyncio.to_thread(_fetch)
 
+    @app.get("/api/ferry/schedule")
+    async def get_ferry_schedule(rlvtYmd: str = "", pageNo: int = 1, numOfRows: int = 1000):
+        """여객선 운항 일정 API 프록시 (CORS 우회)"""
+        FERRY_API_URL = "https://apis.data.go.kr/B554035/oprt-schd-info-v2/get-oprt-schd-info-v2"
+        FERRY_SERVICE_KEY = "4063f2c2047eaf451ca47bba11369c953e228d145a62d2be87ad7af1d0f3960f"
+        import urllib.request
+        from urllib.parse import urlencode
+        def _fetch():
+            params = urlencode({
+                "serviceKey": FERRY_SERVICE_KEY,
+                "pageNo": str(pageNo),
+                "numOfRows": str(numOfRows),
+                "dataType": "JSON",
+                "rlvtYmd": rlvtYmd or shared_client.now().strftime("%Y%m%d"),
+            })
+            url = f"{FERRY_API_URL}?{params}"
+            req = urllib.request.Request(url, headers={"Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                return json.loads(resp.read().decode())
+        try:
+            return await asyncio.to_thread(_fetch)
+        except Exception as exc:
+            raise HTTPException(status_code=502, detail=f"여객선 API 오류: {exc}") from exc
+
     @app.get("/settings", response_class=HTMLResponse)
     async def settings_page(request: Request) -> HTMLResponse:
         query1_snapshot = query1_snapshot_service.get_snapshot()
