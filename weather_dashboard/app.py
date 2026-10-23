@@ -792,6 +792,165 @@ def create_app(
             return {"ok": False, "error": "데이터 없음", "stn": stn, "tm": tm}
         return await asyncio.to_thread(_fetch)
 
+    # ── 푸시 알림 ──
+    VAPID_PRIVATE_KEY_PEM = """-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIEIkBTKO9q/V/QApMiGBs1b+iyzhbHnURNtERSpS1XKkoAoGCCqGSM49
+AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
++t80Bhvjmso6+OH7qD9f/+SiaGKq7tgJsg==
+-----END EC PRIVATE KEY-----"""
+    VAPID_PUBLIC_KEY = "BKPg6UoZjzuW_3PgH0FBLRSoU-KHseGaXT9o4QgAtpM1JlhmHEmcnPrfNAYb45rKOvjh-6g_X__komhiqu7YCbI"
+    VAPID_CLAIMS = {"sub": "mailto:dla6154@gmail.com"}
+    SUPABASE_URL = "https://fnpsaypaxpxyyqmrqwai.supabase.co"
+    SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucHNheXBheHB4eXlxbXJxd2FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTc1NzYsImV4cCI6MjA4OTU3MzU3Nn0.yZir2n-zxnbedVdIKwpqJAnWjuwEp96jIYjOY6cNPe4"
+
+    def _supabase_headers():
+        return {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json"}
+
+    async def _sb_get(path: str):
+        import httpx
+        async with httpx.AsyncClient() as c:
+            r = await c.get(f"{SUPABASE_URL}/rest/v1/{path}", headers=_supabase_headers(), timeout=10)
+            return r.json()
+
+    async def _sb_post(path: str, data: dict):
+        import httpx
+        async with httpx.AsyncClient() as c:
+            r = await c.post(f"{SUPABASE_URL}/rest/v1/{path}", headers={**_supabase_headers(), "Prefer": "return=minimal"}, json=data, timeout=10)
+            return r.status_code
+
+    async def _sb_upsert(path: str, data: dict, on_conflict: str = ""):
+        import httpx
+        h = {**_supabase_headers(), "Prefer": f"resolution=merge-duplicates,return=minimal"}
+        if on_conflict:
+            h["Prefer"] += f",on_conflict={on_conflict}"
+        async with httpx.AsyncClient() as c:
+            r = await c.post(f"{SUPABASE_URL}/rest/v1/{path}?on_conflict={on_conflict}", headers=h, json=data, timeout=10)
+            return r.status_code
+
+    async def _sb_delete(path: str):
+        import httpx
+        async with httpx.AsyncClient() as c:
+            r = await c.delete(f"{SUPABASE_URL}/rest/v1/{path}", headers=_supabase_headers(), timeout=10)
+            return r.status_code
+
+    def _send_push(subscription_info: dict, title: str, body: str, tag: str = "warning"):
+        from pywebpush import webpush, WebPushException
+        import json as _json
+        try:
+            webpush(
+                subscription_info=subscription_info,
+                data=_json.dumps({"title": title, "body": body, "tag": tag, "url": "https://dla6154-dev.github.io/shipinfo-system/"}),
+                vapid_private_key=VAPID_PRIVATE_KEY_PEM,
+                vapid_claims=VAPID_CLAIMS,
+            )
+            return True
+        except WebPushException as e:
+            print(f"Push 실패: {e}")
+            return False
+
+    @app.post("/api/push/subscribe")
+    async def push_subscribe(request: Request):
+        sub = await request.json()
+        await _sb_upsert("push_subscriptions", {
+            "endpoint": sub.get("endpoint"),
+            "p256dh": sub.get("keys", {}).get("p256dh"),
+            "auth": sub.get("keys", {}).get("auth"),
+        }, on_conflict="endpoint")
+        return {"ok": True}
+
+    @app.post("/api/push/unsubscribe")
+    async def push_unsubscribe(request: Request):
+        data = await request.json()
+        endpoint = data.get("endpoint", "")
+        if endpoint:
+            await _sb_delete(f"push_subscriptions?endpoint=eq.{endpoint}")
+        return {"ok": True}
+
+    @app.get("/api/push/check-warnings")
+    async def push_check_warnings():
+        """Render Cron Job이 5분마다 호출 → 특보 변경 감지 후 푸시 발송"""
+        import hashlib, json as _json
+
+        # 현재 특보 조회
+        snapshot = area_warning_snapshot_service.get_snapshot()
+        warnings = []
+        for entry in (snapshot.entries if snapshot else []):
+            for w in (entry.warnings or []):
+                warnings.append({
+                    "selectionKey": entry.selectionKey,
+                    "areaLabel": entry.areaLabel,
+                    "level": w.level,
+                    "issuedAt": str(w.issuedAt or ""),
+                    "effectiveAt": str(w.effectiveAt or ""),
+                })
+        current_hash = hashlib.md5(_json.dumps(warnings, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+
+        # 이전 스냅샷과 비교
+        prev_rows = await _sb_get("warning_snapshot?id=eq.1&select=hash,data")
+        prev_hash = prev_rows[0].get("hash", "") if prev_rows else ""
+        prev_data = prev_rows[0].get("data", []) if prev_rows else []
+
+        if current_hash == prev_hash:
+            return {"changed": False, "warnings": len(warnings)}
+
+        # 변경 감지 → 스냅샷 업데이트
+        await _sb_upsert("warning_snapshot", {"id": 1, "hash": current_hash, "data": warnings}, on_conflict="id")
+
+        if not prev_hash:
+            return {"changed": True, "reason": "초기화", "sent": 0}
+
+        # 새로 추가된 특보 찾기
+        prev_keys = {(w["selectionKey"], w["level"], w["issuedAt"]) for w in prev_data}
+        new_warnings = [w for w in warnings if (w["selectionKey"], w["level"], w["issuedAt"]) not in prev_keys]
+
+        # 해제된 특보 찾기
+        cur_keys = {(w["selectionKey"], w["level"], w["issuedAt"]) for w in warnings}
+        removed_warnings = [w for w in prev_data if (w["selectionKey"], w["level"], w["issuedAt"]) not in cur_keys]
+
+        if not new_warnings and not removed_warnings:
+            return {"changed": True, "reason": "내용변경", "sent": 0}
+
+        # 구독자 조회
+        subs = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
+        sent = 0
+
+        def _fmt_time(ts: str) -> str:
+            if not ts or len(ts) < 12: return ""
+            try:
+                h = int(ts[8:10])
+                label = "새벽(00-06시)" if h < 6 else "오전(06-12시)" if h < 12 else "오후(12-18시)" if h < 18 else "밤(18-24시)"
+                return f"{int(ts[6:8])}일 {label}"
+            except Exception:
+                return ts
+
+        for w in new_warnings:
+            level = w.get("level", "")
+            area = w.get("areaLabel", "")
+            is_pre = "예비" in level
+            eff = _fmt_time(w.get("effectiveAt", ""))
+            if is_pre:
+                title = f"[진도 운항관리] {level} 발표"
+                body = f"{area}\n{eff} 발효 예정"
+            else:
+                eff_str = f"{eff} 발효" if eff else ""
+                title = f"[진도 운항관리] {level} 발표"
+                body = f"{area}\n{eff_str}"
+
+            for s in subs:
+                ok = await asyncio.to_thread(_send_push, {"endpoint": s["endpoint"], "keys": {"p256dh": s["p256dh"], "auth": s["auth"]}}, title, body, tag=f"new-{w['level']}")
+                if ok: sent += 1
+
+        for w in removed_warnings:
+            level = w.get("level", "")
+            area = w.get("areaLabel", "")
+            title = f"[진도 운항관리] {level} 해제"
+            body = area
+            for s in subs:
+                ok = await asyncio.to_thread(_send_push, {"endpoint": s["endpoint"], "keys": {"p256dh": s["p256dh"], "auth": s["auth"]}}, title, body, tag=f"cancel-{w['level']}")
+                if ok: sent += 1
+
+        return {"changed": True, "new": len(new_warnings), "removed": len(removed_warnings), "sent": sent}
+
     @app.get("/api/ferry/schedule")
     async def get_ferry_schedule(rlvtYmd: str = "", pageNo: int = 1, numOfRows: int = 1000):
         """여객선 운항 일정 API 프록시 (CORS 우회)"""
