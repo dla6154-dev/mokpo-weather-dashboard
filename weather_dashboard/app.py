@@ -599,15 +599,7 @@ def create_app(
 
     @app.get("/overview", response_class=HTMLResponse)
     async def overview_page(request: Request) -> HTMLResponse:
-        return templates.TemplateResponse(
-            request,
-            "overview.html",
-            {
-                "client_refresh_seconds": app_settings.client_refresh_interval_seconds,
-                "layout_json": json.dumps(_load_overview_layout(), ensure_ascii=False),
-                "embed": is_embed(request),
-            },
-        )
+        raise HTTPException(status_code=410, detail="This page has been removed.")
 
     @app.get("/shipinfo-summary", response_class=HTMLResponse)
     async def shipinfo_summary_page(request: Request) -> HTMLResponse:
