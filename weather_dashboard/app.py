@@ -757,6 +757,26 @@ def create_app(
         result = await asyncio.to_thread(tide_snapshot_service.builder.build_monthly, target_ym)
         return result
 
+    @app.get("/api/tides/weekly")
+    async def get_tide_weekly(start: str = "", days: int = 7):
+        now = shared_client.now()
+        target_start = start.strip() or now.strftime("%Y%m%d")
+        if not target_start.isdigit() or len(target_start) != 8:
+            raise HTTPException(status_code=400, detail="start must be YYYYMMDD")
+        try:
+            datetime.strptime(target_start, "%Y%m%d")
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail="start is not a valid date") from exc
+        if not 1 <= days <= 7:
+            raise HTTPException(status_code=400, detail="days must be between 1 and 7")
+        if not app_settings.tide_service_key:
+            raise HTTPException(status_code=503, detail="TIDE_SERVICE_KEY not configured")
+        return await asyncio.to_thread(
+            tide_snapshot_service.builder.build_range,
+            target_start,
+            days,
+        )
+
     @app.get("/api/sfc/obs")
     async def get_sfc_obs(stn: int = 268):
         """지상관측 현재기상 (온도/풍속/시정) — STN 268 진도군 기본"""

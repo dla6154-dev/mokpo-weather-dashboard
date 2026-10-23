@@ -206,6 +206,22 @@ class TideBuilder:
         year = int(ym[:4])
         month = int(ym[4:6])
         num_days = _calendar.monthrange(year, month)[1]
+        dates = [datetime(year, month, day_num, tzinfo=self.tz) for day_num in range(1, num_days + 1)]
+        result = self._build_date_range(dates)
+        return {
+            "ym": ym,
+            "generatedAt": result["generatedAt"],
+            "days": result["days"],
+        }
+
+    def build_range(self, start_date: str, day_count: int = 7) -> dict:
+        """지정한 날짜부터 최대 7일의 조석 예보를 반환합니다."""
+        start = datetime.strptime(start_date, "%Y%m%d").replace(tzinfo=self.tz)
+        dates = [start + timedelta(days=offset) for offset in range(day_count)]
+        return self._build_date_range(dates)
+
+    def _build_date_range(self, dates: list[datetime]) -> dict:
+        """필요한 날짜만 조회해 원천 API 호출량을 제한합니다."""
 
         def _fetch(obs_code: str, station_name: str, req_date: str):
             try:
@@ -218,8 +234,8 @@ class TideBuilder:
                 return station_name, req_date, []
 
         tasks = [
-            (obs_code, station_name, f"{year}{month:02d}{day_num:02d}")
-            for day_num in range(1, num_days + 1)
+            (obs_code, station_name, day.strftime("%Y%m%d"))
+            for day in dates
             for obs_code, station_name in TIDE_STATIONS
         ]
 
@@ -231,9 +247,8 @@ class TideBuilder:
                 results.setdefault(req_date, {})[station_name] = items
 
         days = []
-        for day_num in range(1, num_days + 1):
-            req_date = f"{year}{month:02d}{day_num:02d}"
-            day_dt = datetime(year, month, day_num, tzinfo=self.tz)
+        for day_dt in dates:
+            req_date = day_dt.strftime("%Y%m%d")
             entries = []
             for _obs_code, station_name in TIDE_STATIONS:
                 for item in results.get(req_date, {}).get(station_name, []):
@@ -254,12 +269,12 @@ class TideBuilder:
             days.append({
                 "date": req_date,
                 "dateStr": day_dt.strftime("%Y년 %m월 %d일"),
-                "label": f"{month}월 {day_num}일",
+                "label": f"{day_dt.month}월 {day_dt.day}일",
                 "entries": entries,
             })
 
         return {
-            "ym": ym,
+            "startDate": dates[0].strftime("%Y%m%d") if dates else "",
             "generatedAt": datetime.now(self.tz).isoformat(),
             "days": days,
         }
