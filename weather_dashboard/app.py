@@ -866,6 +866,21 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             await _sb_delete(f"push_subscriptions?endpoint=eq.{endpoint}")
         return {"ok": True}
 
+    @app.get("/api/push/test-send")
+    async def push_test_send():
+        """테스트용: 모든 구독자에게 즉시 테스트 알림 발송"""
+        rows = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
+        sent = 0
+        failed = 0
+        for row in rows:
+            sub = {"endpoint": row["endpoint"], "keys": {"p256dh": row["p256dh"], "auth": row["auth"]}}
+            ok = _send_push(sub, "[진도 운항관리] 테스트 알림", "알림이 정상적으로 수신되었습니다.", "test-notification")
+            if ok:
+                sent += 1
+            else:
+                failed += 1
+        return {"ok": True, "sent": sent, "failed": failed, "total": len(rows)}
+
     @app.get("/api/push/check-warnings")
     async def push_check_warnings():
         """Render Cron Job이 5분마다 호출 → 특보 변경 감지 후 푸시 발송"""
