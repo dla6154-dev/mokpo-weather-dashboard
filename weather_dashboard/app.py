@@ -854,11 +854,10 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             return r.status_code
 
     def _get_vapid_private_key_b64():
-        from cryptography.hazmat.primitives.serialization import load_pem_private_key, Encoding, NoEncryption, PrivateFormat
-        from cryptography.hazmat.primitives.asymmetric.ec import SECP256R1
+        from cryptography.hazmat.primitives.serialization import load_pem_private_key
         import base64
         key = load_pem_private_key(VAPID_PRIVATE_KEY_PEM.strip().encode(), password=None)
-        raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
+        raw = key.private_numbers().private_value.to_bytes(32, "big")
         return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
 
     def _send_push(subscription_info: dict, title: str, body: str, tag: str = "warning"):
@@ -872,7 +871,7 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
                 vapid_claims=VAPID_CLAIMS,
             )
             return True
-        except WebPushException as e:
+        except Exception as e:
             print(f"Push 실패: {e}")
             return False
 
