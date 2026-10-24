@@ -925,11 +925,11 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
         for entry in (snapshot.entries if snapshot else []):
             for w in (entry.warnings or []):
                 warnings.append({
-                    "selectionKey": entry.selectionKey,
-                    "areaLabel": entry.areaLabel,
-                    "level": w.level,
-                    "issuedAt": str(w.issuedAt or ""),
-                    "effectiveAt": str(w.effectiveAt or ""),
+                    "selectionKey": entry.selection_key,
+                    "areaLabel": entry.area_label or entry.area_name,
+                    "level": f"{w.warning_type}{w.level}",
+                    "issuedAt": str(w.issued_at or ""),
+                    "effectiveAt": str(w.effective_at or ""),
                 })
         current_hash = hashlib.md5(_json.dumps(warnings, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
