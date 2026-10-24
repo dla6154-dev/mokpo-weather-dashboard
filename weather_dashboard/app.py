@@ -853,6 +853,14 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             r = await c.delete(f"{SUPABASE_URL}/rest/v1/{path}", headers=_supabase_headers(), timeout=10)
             return r.status_code
 
+    def _get_vapid_private_key_b64():
+        from cryptography.hazmat.primitives.serialization import load_pem_private_key, Encoding, NoEncryption, PrivateFormat
+        from cryptography.hazmat.primitives.asymmetric.ec import SECP256R1
+        import base64
+        key = load_pem_private_key(VAPID_PRIVATE_KEY_PEM.strip().encode(), password=None)
+        raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
+        return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
+
     def _send_push(subscription_info: dict, title: str, body: str, tag: str = "warning"):
         from pywebpush import webpush, WebPushException
         import json as _json
@@ -860,7 +868,7 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             webpush(
                 subscription_info=subscription_info,
                 data=_json.dumps({"title": title, "body": body, "tag": tag, "url": "https://dla6154-dev.github.io/shipinfo-system/"}),
-                vapid_private_key=VAPID_PRIVATE_KEY_PEM,
+                vapid_private_key=_get_vapid_private_key_b64(),
                 vapid_claims=VAPID_CLAIMS,
             )
             return True
