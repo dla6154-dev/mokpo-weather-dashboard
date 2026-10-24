@@ -919,10 +919,28 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
         except Exception as e:
             return {"ok": False, "error": str(e)}
 
+    _tide_prefill_state = {"last": 0.0}
+
+    async def _prefill_tide_months():
+        import httpx
+        from datetime import datetime, timedelta, timezone
+        now = datetime.now(timezone(timedelta(hours=9)))
+        nxt = (now.replace(day=1) + timedelta(days=32)).replace(day=1)
+        for ym in (now.strftime("%Y%m"), nxt.strftime("%Y%m")):
+            try:
+                async with httpx.AsyncClient() as c:
+                    await c.get(f"{SUPABASE_URL}/functions/v1/fetch-kma-tide-monthly?ym={ym}", headers=_supabase_headers(), timeout=70)
+            except Exception as e:
+                print(f"조석 미리저장 실패 {ym}: {e}")
+
     @app.get("/api/push/check-warnings")
     async def push_check_warnings():
         """Render Cron Job이 5분마다 호출 → 특보 변경 감지 후 푸시 발송"""
-        import hashlib, json as _json
+        import hashlib, json as _json, time as _time
+
+        if _time.time() - _tide_prefill_state["last"] > 3600:
+            _tide_prefill_state["last"] = _time.time()
+            asyncio.create_task(_prefill_tide_months())
 
         # 현재 특보 조회
         snapshot = area_warning_snapshot_service.get_snapshot()
