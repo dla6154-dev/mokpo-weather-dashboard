@@ -868,7 +868,7 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
                 subscription_info=subscription_info,
                 data=_json.dumps({"title": title, "body": body, "tag": tag, "url": "https://dla6154-dev.github.io/shipinfo-system/"}),
                 vapid_private_key=_get_vapid_private_key_b64(),
-                vapid_claims=VAPID_CLAIMS,
+                vapid_claims=dict(VAPID_CLAIMS),
             )
             return True
         except Exception as e:
@@ -900,16 +900,22 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             rows = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
             if not isinstance(rows, list):
                 return {"ok": False, "error": f"Supabase 응답 오류: {rows}"}
-            sent = 0
-            failed = 0
+            from pywebpush import webpush
+            import json as _json
+            results = []
             for row in rows:
                 sub = {"endpoint": row["endpoint"], "keys": {"p256dh": row["p256dh"], "auth": row["auth"]}}
-                ok = _send_push(sub, "[진도 운항관리] 테스트 알림", "알림이 정상적으로 수신되었습니다.", "test-notification")
-                if ok:
-                    sent += 1
-                else:
-                    failed += 1
-            return {"ok": True, "sent": sent, "failed": failed, "total": len(rows)}
+                try:
+                    resp = webpush(
+                        subscription_info=sub,
+                        data=_json.dumps({"title": "[진도 운항관리] 테스트 알림", "body": "알림이 정상적으로 수신되었습니다.", "tag": "test-notification"}),
+                        vapid_private_key=_get_vapid_private_key_b64(),
+                        vapid_claims=dict(VAPID_CLAIMS),
+                    )
+                    results.append({"endpoint": row["endpoint"][:60], "status": getattr(resp, "status_code", None)})
+                except Exception as e:
+                    results.append({"endpoint": row["endpoint"][:60], "error": str(e)[:300]})
+            return {"ok": True, "total": len(rows), "results": results}
         except Exception as e:
             return {"ok": False, "error": str(e)}
 
