@@ -942,21 +942,46 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             _tide_prefill_state["last"] = _time.time()
             asyncio.create_task(_prefill_tide_months())
 
-        # 현재 특보 조회
-        snapshot = area_warning_snapshot_service.get_snapshot()
+        # 알림 대상 구역 (기상청 REG_ID, 평수구역 구분) → 표시 이름, 해당 항로
+        PUSH_ZONES = {
+            "S1231500": ("전남남부서해앞바다", ["목포-율목", "진도-제주"]),
+            "S2210500": ("전남남부서해앞바다 평수", ["목포-율목", "우수영-상태동리", "율목-진도", "진도-죽도", "진도-서거차", "쉬미-가사"]),
+            "S2211400": ("전남중부서해앞바다 앞평수", ["목포-율목", "우수영-상태동리"]),
+            "S1232210": ("서해남부남쪽안쪽먼바다", ["목포-율목", "진도-제주", "진도-죽도", "진도-서거차"]),
+            "S2211200": ("조도부근 평수구역", ["목포-율목", "율목-진도", "진도-죽도", "진도-서거차"]),
+            "S1322100": ("남해서부서쪽먼바다", ["진도-제주"]),
+        }
+        LEVEL_TEXT = {"주의": "주의보", "경보": "경보", "예비": "예비특보"}
+        PRE_BANDS = {"0259": "00-03", "0559": "03-06", "0859": "06-09", "1159": "09-12", "1459": "12-15", "1759": "15-18",
+                     "2059": "18-21", "2359": "21-24", "0558": "00-06", "1158": "06-12", "1758": "12-18", "2358": "18-24", "1458": "12-18"}
+
+        cache = await _sb_get("external_api_cache?id=eq.wb-warning&select=payload")
+        rows = ((cache[0].get("payload") or {}).get("rows") if isinstance(cache, list) and cache else None)
+        if not isinstance(rows, list):
+            return {"ok": False, "error": "wb-warning 특보 자료 없음"}
+
+        # 구역·특보종류·(예비/특보)별 최신 발표만 남기고 해제된 것은 제외
+        latest = {}
+        for r in rows:
+            reg = r.get("regId")
+            if reg not in PUSH_ZONES:
+                continue
+            k = (reg, r.get("wrn", ""), "예비" if r.get("lvl") == "예비" else "특보")
+            if k not in latest or str(latest[k].get("tmFc", "")) < str(r.get("tmFc", "")):
+                latest[k] = r
         warnings = []
-        for entry in (snapshot.entries if snapshot else []):
-            for w in (entry.warnings or []):
-                warnings.append({
-                    "selectionKey": entry.selection_key,
-                    "areaLabel": entry.area_label or entry.area_name,
-                    "level": f"{w.warning_type}{w.level}",
-                    "issuedAt": str(w.issued_at or ""),
-                    "effectiveAt": str(w.effective_at or ""),
-                })
+        for r in latest.values():
+            if r.get("cmd") in ("해제", "대치해제", "변경해제"):
+                continue
+            warnings.append({
+                "regId": r.get("regId"),
+                "level": f"{r.get('wrn', '')}{LEVEL_TEXT.get(r.get('lvl'), r.get('lvl', ''))}",
+                "tmEf": str(r.get("tmEf") or ""),
+                "pre": r.get("lvl") == "예비",
+            })
+        warnings.sort(key=lambda w: (w["regId"], w["level"]))
         current_hash = hashlib.md5(_json.dumps(warnings, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
-        # 이전 스냅샷과 비교
         prev_rows = await _sb_get("warning_snapshot?id=eq.1&select=hash,data")
         prev_hash = prev_rows[0].get("hash", "") if prev_rows else ""
         prev_data = prev_rows[0].get("data", []) if prev_rows else []
@@ -964,54 +989,56 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
         if current_hash == prev_hash:
             return {"changed": False, "warnings": len(warnings)}
 
-        # 변경 감지 → 스냅샷 업데이트
         from datetime import datetime as _dt, timezone as _tz
         await _sb_upsert("warning_snapshot", {"id": 1, "hash": current_hash, "data": warnings, "updated_at": _dt.now(_tz.utc).isoformat()}, on_conflict="id")
 
-        if not prev_hash:
-            return {"changed": True, "reason": "초기화", "sent": 0}
+        # 이전 형식(전국 해역) 저장본이면 알림 없이 기준만 새로 잡음
+        if not prev_hash or any("regId" not in w for w in (prev_data or [])):
+            return {"changed": True, "reason": "초기화", "warnings": len(warnings), "sent": 0}
 
-        # 같은 해역·같은 특보는 재발표(발표시각 변경)여도 변화로 보지 않음
-        def _key(w):
-            return (w.get("selectionKey"), w.get("level"))
-        prev_keys = {_key(w) for w in prev_data}
-        cur_keys = {_key(w) for w in warnings}
-        new_warnings = list({_key(w): w for w in warnings if _key(w) not in prev_keys}.values())
-        removed_warnings = list({_key(w): w for w in prev_data if _key(w) not in cur_keys}.values())
-
+        key = lambda w: (w.get("regId"), w.get("level"))
+        prev_keys = {key(w) for w in prev_data}
+        cur_keys = {key(w) for w in warnings}
+        new_warnings = [w for w in warnings if key(w) not in prev_keys]
+        removed_warnings = [w for w in prev_data if key(w) not in cur_keys]
         if not new_warnings and not removed_warnings:
             return {"changed": True, "reason": "내용변경", "sent": 0}
 
-        def _fmt_time(ts: str) -> str:
-            if not ts or len(ts) < 12: return ""
-            try:
-                h = int(ts[8:10])
-                label = "새벽" if h < 6 else "오전" if h < 12 else "오후" if h < 18 else "밤"
-                return f"{int(ts[6:8])}일 {label}"
-            except Exception:
+        def _when(w):
+            ts = w.get("tmEf", "")
+            if len(ts) < 12:
                 return ""
+            if w.get("pre"):
+                band = PRE_BANDS.get(ts[8:12])
+                return f"{int(ts[6:8])}일 {band}시 예상" if band else ""
+            return f"{int(ts[6:8])}일 {ts[8:10]}:{ts[10:12]} 발효"
+
+        def _zone(w):
+            return PUSH_ZONES.get(w.get("regId"), (w.get("regId"), []))
 
         lines_out = []
         for w in new_warnings:
-            eff = _fmt_time(w.get("effectiveAt", ""))
-            verb = "발효 예정" if "예비" in w.get("level", "") else "발효"
-            lines_out.append(f"{w.get('level','')} {w.get('areaLabel','')}" + (f" ({eff} {verb})" if eff else ""))
+            name, routes = _zone(w)
+            when = _when(w)
+            lines_out.append(f"{w['level']} {name}" + (f" ({when})" if when else "") + (f"\n  └ {', '.join(routes)}" if routes else ""))
         for w in removed_warnings:
-            lines_out.append(f"{w.get('level','')} 해제 {w.get('areaLabel','')}")
+            name, _ = _zone(w)
+            lines_out.append(f"{w['level']} 해제 {name}")
 
         if len(new_warnings) == 1 and not removed_warnings:
-            title = f"[진도 운항관리] {new_warnings[0].get('level','')} 발표"
+            title = f"[진도 운항관리] {new_warnings[0]['level']} 발표"
         elif len(removed_warnings) == 1 and not new_warnings:
-            title = f"[진도 운항관리] {removed_warnings[0].get('level','')} 해제"
+            title = f"[진도 운항관리] {removed_warnings[0]['level']} 해제"
         else:
             title = f"[진도 운항관리] 특보 변경 {len(lines_out)}건"
-        body = "\n".join(lines_out[:6]) + (f"\n외 {len(lines_out) - 6}건" if len(lines_out) > 6 else "")
+        body = "\n".join(lines_out)
 
         subs = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
         sent = 0
         for s in subs:
             ok = await asyncio.to_thread(_send_push, {"endpoint": s["endpoint"], "keys": {"p256dh": s["p256dh"], "auth": s["auth"]}}, title, body, "warning-change")
-            if ok: sent += 1
+            if ok:
+                sent += 1
 
         return {"changed": True, "new": len(new_warnings), "removed": len(removed_warnings), "sent": sent}
 
