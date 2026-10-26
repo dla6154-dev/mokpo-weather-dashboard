@@ -933,6 +933,40 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             except Exception as e:
                 print(f"조석 미리저장 실패 {ym}: {e}")
 
+    async def _notify_new_wind_scenario():
+        import httpx
+        rows = await _sb_get("kma_wind_scenario?notified_at=is.null&select=id,issued_at,office&order=id.desc&limit=1")
+        if not isinstance(rows, list) or not rows:
+            return {"scenario": "none"}
+        sc = rows[0]
+        from datetime import datetime as _dt, timezone as _tz
+        # 먼저 표시를 남긴 쪽만 발송 (동시 호출 시 중복 방지)
+        async with httpx.AsyncClient() as c:
+            r = await c.patch(
+                f"{SUPABASE_URL}/rest/v1/kma_wind_scenario?notified_at=is.null&id=lte.{sc['id']}",
+                headers={**_supabase_headers(), "Prefer": "return=representation"},
+                json={"notified_at": _dt.now(_tz.utc).isoformat()},
+                timeout=10,
+            )
+        if r.status_code >= 300 or not any(x.get("id") == sc["id"] for x in (r.json() or [])):
+            return {"scenario": "skipped"}
+        title = "[진도 운항관리] 기상청 풍랑특보 시나리오 등록"
+        body = f"{sc.get('office') or '기상청'} {sc.get('issued_at', '')} 발표\n앱 날씨 화면 > 기상청 시나리오에서 확인하세요."
+        subs = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
+        sent = 0
+        for s in subs:
+            ok = await asyncio.to_thread(_send_push, {"endpoint": s["endpoint"], "keys": {"p256dh": s["p256dh"], "auth": s["auth"]}}, title, body, "kma-scenario")
+            if ok:
+                sent += 1
+        return {"scenario": sc["id"], "sent": sent}
+
+    @app.get("/api/push/scenario-check")
+    async def push_scenario_check():
+        try:
+            return await _notify_new_wind_scenario()
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+
     @app.get("/api/push/check-warnings")
     async def push_check_warnings():
         """Render Cron Job이 5분마다 호출 → 특보 변경 감지 후 푸시 발송"""
@@ -941,6 +975,11 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
         if _time.time() - _tide_prefill_state["last"] > 3600:
             _tide_prefill_state["last"] = _time.time()
             asyncio.create_task(_prefill_tide_months())
+
+        try:
+            await _notify_new_wind_scenario()
+        except Exception as e:
+            print(f"시나리오 알림 확인 실패: {e}")
 
         # 알림 대상 구역 (기상청 REG_ID, 평수구역 구분) → 표시 이름
         PUSH_ZONES = {
