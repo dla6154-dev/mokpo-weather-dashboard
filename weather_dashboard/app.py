@@ -942,14 +942,14 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             _tide_prefill_state["last"] = _time.time()
             asyncio.create_task(_prefill_tide_months())
 
-        # 알림 대상 구역 (기상청 REG_ID, 평수구역 구분) → 표시 이름, 해당 항로
+        # 알림 대상 구역 (기상청 REG_ID, 평수구역 구분) → 표시 이름
         PUSH_ZONES = {
-            "S1231500": ("전남남부서해앞바다", ["목포-율목", "진도-제주"]),
-            "S2210500": ("전남남부서해앞바다 평수", ["목포-율목", "우수영-상태동리", "율목-진도", "진도-죽도", "진도-서거차", "쉬미-가사"]),
-            "S2211400": ("전남중부서해앞바다 앞평수", ["목포-율목", "우수영-상태동리"]),
-            "S1232210": ("서해남부남쪽안쪽먼바다", ["목포-율목", "진도-제주", "진도-죽도", "진도-서거차"]),
-            "S2211200": ("조도부근 평수구역", ["목포-율목", "율목-진도", "진도-죽도", "진도-서거차"]),
-            "S1322100": ("남해서부서쪽먼바다", ["진도-제주"]),
+            "S1231500": "전남남부서해앞바다",
+            "S2210500": "전남남부서해앞바다 평수",
+            "S2211400": "전남중부서해앞바다 앞평수",
+            "S1232210": "서해남부남쪽안쪽먼바다",
+            "S2211200": "조도부근 평수구역",
+            "S1322100": "남해서부서쪽먼바다",
         }
         LEVEL_TEXT = {"주의": "주의보", "경보": "경보", "예비": "예비특보"}
         PRE_BANDS = {"0259": "00-03", "0559": "03-06", "0859": "06-09", "1159": "09-12", "1459": "12-15", "1759": "15-18",
@@ -1014,16 +1014,14 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             return f"{int(ts[6:8])}일 {ts[8:10]}:{ts[10:12]} 발효"
 
         def _zone(w):
-            return PUSH_ZONES.get(w.get("regId"), (w.get("regId"), []))
+            return PUSH_ZONES.get(w.get("regId"), w.get("regId"))
 
         lines_out = []
         for w in new_warnings:
-            name, routes = _zone(w)
             when = _when(w)
-            lines_out.append(f"{w['level']} {name}" + (f" ({when})" if when else "") + (f"\n  └ {', '.join(routes)}" if routes else ""))
+            lines_out.append(f"{w['level']} {_zone(w)}" + (f" ({when})" if when else ""))
         for w in removed_warnings:
-            name, _ = _zone(w)
-            lines_out.append(f"{w['level']} 해제 {name}")
+            lines_out.append(f"{w['level']} 해제 {_zone(w)}")
 
         if len(new_warnings) == 1 and not removed_warnings:
             title = f"[진도 운항관리] {new_warnings[0]['level']} 발표"
