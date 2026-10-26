@@ -965,60 +965,53 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             return {"changed": False, "warnings": len(warnings)}
 
         # 변경 감지 → 스냅샷 업데이트
-        await _sb_upsert("warning_snapshot", {"id": 1, "hash": current_hash, "data": warnings}, on_conflict="id")
+        from datetime import datetime as _dt, timezone as _tz
+        await _sb_upsert("warning_snapshot", {"id": 1, "hash": current_hash, "data": warnings, "updated_at": _dt.now(_tz.utc).isoformat()}, on_conflict="id")
 
         if not prev_hash:
             return {"changed": True, "reason": "초기화", "sent": 0}
 
-        # 새로 추가된 특보 찾기
-        prev_keys = {(w["selectionKey"], w["level"], w["issuedAt"]) for w in prev_data}
-        new_warnings = [w for w in warnings if (w["selectionKey"], w["level"], w["issuedAt"]) not in prev_keys]
-
-        # 해제된 특보 찾기
-        cur_keys = {(w["selectionKey"], w["level"], w["issuedAt"]) for w in warnings}
-        removed_warnings = [w for w in prev_data if (w["selectionKey"], w["level"], w["issuedAt"]) not in cur_keys]
+        # 같은 해역·같은 특보는 재발표(발표시각 변경)여도 변화로 보지 않음
+        def _key(w):
+            return (w.get("selectionKey"), w.get("level"))
+        prev_keys = {_key(w) for w in prev_data}
+        cur_keys = {_key(w) for w in warnings}
+        new_warnings = list({_key(w): w for w in warnings if _key(w) not in prev_keys}.values())
+        removed_warnings = list({_key(w): w for w in prev_data if _key(w) not in cur_keys}.values())
 
         if not new_warnings and not removed_warnings:
             return {"changed": True, "reason": "내용변경", "sent": 0}
-
-        # 구독자 조회
-        subs = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
-        sent = 0
 
         def _fmt_time(ts: str) -> str:
             if not ts or len(ts) < 12: return ""
             try:
                 h = int(ts[8:10])
-                label = "새벽(00-06시)" if h < 6 else "오전(06-12시)" if h < 12 else "오후(12-18시)" if h < 18 else "밤(18-24시)"
+                label = "새벽" if h < 6 else "오전" if h < 12 else "오후" if h < 18 else "밤"
                 return f"{int(ts[6:8])}일 {label}"
             except Exception:
-                return ts
+                return ""
 
+        lines_out = []
         for w in new_warnings:
-            level = w.get("level", "")
-            area = w.get("areaLabel", "")
-            is_pre = "예비" in level
             eff = _fmt_time(w.get("effectiveAt", ""))
-            if is_pre:
-                title = f"[진도 운항관리] {level} 발표"
-                body = f"{area}\n{eff} 발효 예정"
-            else:
-                eff_str = f"{eff} 발효" if eff else ""
-                title = f"[진도 운항관리] {level} 발표"
-                body = f"{area}\n{eff_str}"
-
-            for s in subs:
-                ok = await asyncio.to_thread(_send_push, {"endpoint": s["endpoint"], "keys": {"p256dh": s["p256dh"], "auth": s["auth"]}}, title, body, tag=f"new-{w['level']}")
-                if ok: sent += 1
-
+            verb = "발효 예정" if "예비" in w.get("level", "") else "발효"
+            lines_out.append(f"{w.get('level','')} {w.get('areaLabel','')}" + (f" ({eff} {verb})" if eff else ""))
         for w in removed_warnings:
-            level = w.get("level", "")
-            area = w.get("areaLabel", "")
-            title = f"[진도 운항관리] {level} 해제"
-            body = area
-            for s in subs:
-                ok = await asyncio.to_thread(_send_push, {"endpoint": s["endpoint"], "keys": {"p256dh": s["p256dh"], "auth": s["auth"]}}, title, body, tag=f"cancel-{w['level']}")
-                if ok: sent += 1
+            lines_out.append(f"{w.get('level','')} 해제 {w.get('areaLabel','')}")
+
+        if len(new_warnings) == 1 and not removed_warnings:
+            title = f"[진도 운항관리] {new_warnings[0].get('level','')} 발표"
+        elif len(removed_warnings) == 1 and not new_warnings:
+            title = f"[진도 운항관리] {removed_warnings[0].get('level','')} 해제"
+        else:
+            title = f"[진도 운항관리] 특보 변경 {len(lines_out)}건"
+        body = "\n".join(lines_out[:6]) + (f"\n외 {len(lines_out) - 6}건" if len(lines_out) > 6 else "")
+
+        subs = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
+        sent = 0
+        for s in subs:
+            ok = await asyncio.to_thread(_send_push, {"endpoint": s["endpoint"], "keys": {"p256dh": s["p256dh"], "auth": s["auth"]}}, title, body, "warning-change")
+            if ok: sent += 1
 
         return {"changed": True, "new": len(new_warnings), "removed": len(removed_warnings), "sent": sent}
 
