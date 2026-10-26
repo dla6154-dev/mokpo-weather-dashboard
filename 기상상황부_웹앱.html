@@ -113,6 +113,7 @@ body.kiosk .refresh-log-panel{display:none!important}
 #board td.miss{background:#ffd7d7!important;box-shadow:inset 0 0 0 1px #e06666}
 body.editing #board td[contenteditable="true"]{cursor:text;box-shadow:inset 0 0 0 2px #e06666}
 body.editing #board td[data-ed="note"][contenteditable="true"]{box-shadow:inset 0 0 0 2px #2b7bd6}
+body.editing #board td[data-always][contenteditable="true"]{box-shadow:inset 0 0 0 2px #2b7bd6}
 body.editing #b2-notices[contenteditable="true"]{box-shadow:inset 0 0 0 2px #2b7bd6;outline:none}
 body.capturing #board td.miss,body.capturing #board td[contenteditable]{background:#fff!important;box-shadow:none!important}
 @media print{#board td.miss{background:#fff!important;box-shadow:none!important}}
@@ -298,6 +299,49 @@ button.data-item{display:inline;min-height:0;padding:0 14px;gap:0;white-space:no
 .route-report td:first-child{font-weight:700}
 .route-report td:last-child{text-align:right;color:#b0161f;font-weight:700;font-variant-numeric:tabular-nums}
 .route-empty{margin:0;padding:4px 0;font-size:12px;color:var(--muted)}
+.route-missing{margin:12px 0 0;padding:6px 8px;font-size:11px;color:#835c18;background:#fff5df;border-radius:4px}
+.rd-settings,.rs-save{margin-left:auto;height:34px;padding:0 14px;border:1px solid var(--line);border-radius:6px;background:#fff;font:inherit;font-size:13px;color:var(--navy);cursor:pointer}
+.rd-settings+.rd-close,.rs-save+.rd-close{margin-left:0}
+.rs-save{background:#1d5fc4;border-color:#1d5fc4;color:#fff;font-weight:700}
+.rs-save:disabled{background:#fff;border-color:var(--line);color:var(--muted);font-weight:400;cursor:default}
+#rs-status{color:#a8641a;font-weight:700}
+.rs-dialog{width:min(980px,96vw)}
+.rs-body{display:flex;gap:0;min-height:0;height:min(640px,80vh)}
+.rs-left{flex:0 0 280px;display:flex;flex-direction:column;border-right:1px solid var(--line);min-height:0}
+.rs-add{display:flex;gap:6px;padding:12px}
+.rs-add input{flex:1;min-width:0;height:34px;padding:0 10px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px;text-transform:uppercase}
+.rs-add button,.rs-detail button,.rs-detail select{height:32px;padding:0 12px;border:1px solid var(--line);border-radius:6px;background:#fff;font:inherit;font-size:13px;color:var(--navy);cursor:pointer}
+.rs-add button{background:#1d5fc4;border-color:#1d5fc4;color:#fff;font-weight:700}
+.rs-msg{margin:0 12px 8px;min-height:18px;font-size:12px;color:var(--muted)}
+.rs-msg.err{color:#ad2828}
+.rs-list{list-style:none;margin:0;padding:0 8px 12px;overflow:auto;flex:1;min-height:0}
+.rs-list button{display:flex;align-items:center;gap:8px;width:100%;padding:7px 8px;border:0;border-radius:6px;background:none;font:inherit;font-size:13px;color:var(--navy);text-align:left;cursor:pointer}
+.rs-list button:hover{background:#f2f6fa}
+.rs-list button[aria-current="true"]{background:#e6f0ff;font-weight:700}
+.rs-list code{font-size:12px;color:#1d5fc4}
+.rs-list .rs-sub{padding-left:22px}
+.rs-list small{margin-left:auto;color:var(--muted);font-weight:400}
+.rs-detail{flex:1;min-width:0;overflow:auto;padding:16px 20px}
+.rs-detail h3{margin:0 0 4px;font-size:17px}
+.rs-detail h4{margin:20px 0 8px;font-size:14px}
+.rs-detail .rs-note{margin:0 0 6px;font-size:12px;color:var(--muted)}
+.rs-zones{list-style:none;margin:0 0 10px;padding:0;border:1px solid var(--line);border-radius:6px}
+.rs-zones li{display:flex;align-items:center;gap:8px;padding:6px 10px;font-size:13px}
+.rs-zones li+li{border-top:1px solid #edf1f5}
+.rs-zones li button{margin-left:auto;height:26px;padding:0 10px;font-size:12px}
+.rs-zones .far{font-size:11px;color:var(--muted)}
+.rs-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.rs-row select{flex:1 1 240px;min-width:0;max-width:100%}
+.rd-head button,.rs-detail button,.rs-add button{white-space:nowrap;flex-shrink:0}
+.rs-danger{color:#ad2828!important;border-color:#f1c4c1!important}
+.rs-subs{width:100%;border-collapse:collapse;font-size:13px}
+.rs-subs td{padding:6px 8px;border-bottom:1px solid #edf1f5}
+.rs-subs td:last-child{text-align:right}
+.rs-subs td:nth-child(2){white-space:nowrap;width:1%}
+.rs-subs button{white-space:normal!important;height:auto!important;min-height:28px;padding:3px 10px!important}
+.rs-subs label{display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.rs-empty{padding:30px 0;color:var(--muted);text-align:center}
+@media(max-width:900px){.rs-body{flex-direction:column;height:80vh}.rs-left{flex:0 0 40%;border-right:0;border-bottom:1px solid var(--line)}.rs-detail{padding:12px 14px}.rd-head h2{font-size:16px}.rd-head{gap:8px;padding:12px 14px}}
 @media(max-width:900px){.rd-body{flex-direction:column}.rd-routes{position:static;align-self:auto;flex:none;border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:12px}}
 @media print{.route-dialog,.app .route-btn{display:none!important}}
 #cap-board2 *{box-sizing:border-box}
@@ -354,6 +398,7 @@ button.data-item{display:inline;min-height:0;padding:0 14px;gap:0;white-space:no
 #cap-board2 .red{color:#e00000!important}
 #cap-board2 .purple{color:#800080!important}
 #cap-board2 .muted{color:#8c99a6}
+body.editing #cap-board2 #b2-mokpo-vis[contenteditable="true"]{box-shadow:inset 0 0 0 2px #2b7bd6;outline:none;cursor:text}
 #cap-board2 .missing{background:#fff5e3;color:#906a2f!important}
 #cap-board2 .b2-section h3{font-size:15px;background:#dceaf6;border-bottom:1px solid #245783;padding:5px 9px;margin:0}
 #cap-board2 .b2-section h3 small{font-weight:400;float:right;font-size:11px;padding-top:3px}
@@ -491,10 +536,21 @@ button.data-item{display:inline;min-height:0;padding:0 14px;gap:0;white-space:no
   </main>
 </div>
 <dialog class="route-dialog" id="route-dialog" aria-labelledby="rd-title">
-  <header class="rd-head"><h2 id="rd-title">특보 해당 항로</h2><span id="rd-source"></span><button type="button" class="rd-close" id="rd-close" aria-label="닫기">×</button></header>
+  <header class="rd-head"><h2 id="rd-title">특보 해당 항로</h2><span id="rd-source"></span><button type="button" class="rd-settings" id="rd-settings">설정</button><button type="button" class="rd-close" id="rd-close" aria-label="닫기">×</button></header>
   <div class="rd-body">
     <section class="rd-zones"><h3>구역별 기상특보</h3><table id="rd-table"><colgroup><col style="width:15%"><col style="width:11%"><col style="width:12%"><col style="width:62%"></colgroup><thead><tr><th>해역</th><th>세부구역</th><th>특보</th><th>해당 항로</th></tr></thead><tbody></tbody></table></section>
     <aside class="rd-routes"><div id="route-list" role="status" aria-live="polite"></div></aside>
+  </div>
+</dialog>
+<dialog class="route-dialog rs-dialog" id="rs-dialog" aria-labelledby="rs-title">
+  <header class="rd-head"><h2 id="rs-title">항로·해역 설정</h2><span id="rs-status"></span><button type="button" class="rs-save" id="rs-save" disabled>저장</button><button type="button" class="rd-close" id="rs-close" aria-label="닫기">×</button></header>
+  <div class="rs-body">
+    <aside class="rs-left">
+      <form class="rs-add" id="rs-add"><input id="rs-code" placeholder="항로코드 (예: F21)" autocomplete="off" aria-label="항로코드"><button type="submit">등록</button></form>
+      <p class="rs-msg" id="rs-msg" role="status"></p>
+      <ul class="rs-list" id="rs-list"></ul>
+    </aside>
+    <section class="rs-detail" id="rs-detail"></section>
   </div>
 </dialog>
 <div class="toast" id="msg" role="status" aria-live="polite" hidden></div>
@@ -538,6 +594,7 @@ function put(sid, c, v, opt){
   const td = cell(sid,c); if(!td) return;
   const manual = store.get(editKey(sid,c));
   if(sid === 'board'){
+    if(td.dataset.always === '1' && manual !== null){ td.classList.remove('miss'); td.textContent = manual; td.dataset.manual='1'; return; }  // 직접 넣은 목포 시정 유지
     let val = v == null ? '' : String(v).trim();
     if(/^(데이터\s*없음|자료\s*없음|미제공|없음|null|undefined|NaN)$/i.test(val)) val = '';
     if(td.dataset.ed === 'obs' && !(opt && opt.optional) && val === ''){
@@ -860,17 +917,20 @@ function prepBoardEdit(){
     const m = /^([A-Z]+)(\d+)$/.exec(td.dataset.c || ''); if(!m) return;
     const col = m[1], row = Number(m[2]);
     if(row >= 8 && row <= 21 && ['T','U','V','W','X','Y','Z'].includes(col)) td.dataset.ed = 'obs';
+    if(td.dataset.c === 'Z8') td.dataset.always = '1';  // 목포 시정
     else if(td.dataset.c === 'C29') td.dataset.ed = 'note';
   });
 }
 function setEditMode(on){
   editMode = !!on;
   document.querySelectorAll('#board td[data-ed]').forEach(td=>{
-    const can = editMode && (td.dataset.ed === 'note' || td.classList.contains('miss'));
+    const can = editMode && (td.dataset.ed === 'note' || td.dataset.always === '1' || td.classList.contains('miss'));
     if(can) td.setAttribute('contenteditable','true'); else td.removeAttribute('contenteditable');
   });
   const b2n = document.getElementById('b2-notices');
   if(b2n){ if(editMode) b2n.setAttribute('contenteditable','true'); else b2n.removeAttribute('contenteditable'); }
+  const b2v = document.getElementById('b2-mokpo-vis');
+  if(b2v){ if(editMode) b2v.setAttribute('contenteditable','true'); else b2v.removeAttribute('contenteditable'); }
   document.body.classList.toggle('editing', editMode);
   const b = document.getElementById('btnEdit');
   if(b){ b.classList.toggle('primary', editMode); b.setAttribute('aria-pressed', String(editMode)); const l = b.querySelector('.lbl'); if(l) l.textContent = editMode ? '수정 완료' : '수정'; }
@@ -890,6 +950,12 @@ function bindEdits(){
     note.textContent = b2n.innerText.replace(/\n$/,'');
     note.dispatchEvent(new Event('input'));
   });
+  document.getElementById('b2-obs')?.addEventListener('input', e=>{
+    if(e.target.id !== 'b2-mokpo-vis') return;
+    const z8 = cell('board','Z8'); if(!z8) return;
+    z8.textContent = e.target.innerText.replace(/\n$/,'');
+    z8.dispatchEvent(new Event('input'));
+  });
   document.querySelectorAll('#board td[data-ed]').forEach(td=>{
     td.addEventListener('input', ()=>{
       const t = td.innerText.replace(/\n$/,'');
@@ -907,6 +973,19 @@ function bindEdits(){
 }
 
 // ---------- 기상상황부(개선안): 오전·오후 해상예보 / 구역별 기상특보 / 수집현황 ----------
+// 항로·해역 설정 저장소: 기본은 서버(external_api_cache 'wb-route-config'), 시안에서는 window.WB_ROUTE_STORE 로 바꿔 끼움
+const ROUTE_STORE = window.WB_ROUTE_STORE || {
+  async load(){
+    const r = await fetch(`${SB_URL}/rest/v1/external_api_cache?select=payload&id=eq.wb-route-config`, {headers:{apikey:SB_KEY, Authorization:'Bearer '+SB_KEY}, cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    return (await r.json())[0]?.payload || null;
+  },
+  async save(cfg){
+    const r = await fetch(`${SB_URL}/functions/v1/fetch-weather-board?job=save-route-config`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(cfg), signal:AbortSignal.timeout(20000)});
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok || j.ok !== true) throw new Error(j.error || 'HTTP ' + r.status);
+  },
+};
 const fillBoard2 = (()=>{
   const $ = id => document.getElementById(id);
   const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -921,34 +1000,40 @@ const fillBoard2 = (()=>{
     ['전남서부<br>남해앞바다',[['S1321100','기본'],['S2310700','평수']]],
     ['남해서부<br>서쪽먼바다',[['S1322100','기본'],['S2330100','추자도<small>연안바다</small>']]],
   ];
-  // 특보구역별 여객선 항로 (한 항로가 여러 구역에 걸치면 중복 기재)
-  const ROUTES = {
-    S1231300:['계마-안마','향화-낙월','향화-송이'],
-    S2210300:['향화-낙월','향화-송이'],
-    S1231400:['목포-홍도','송공-흑산','도초-우이'],
-    S2211300:['진리-재원','증도-자은'],
-    S2211400:['목포-홍도','목포-율목','송공-흑산','목포-상태서리','목포-상태동리','목포-외달','도초-목포','도초-우이','진리-재원','웅곡-신도','우수영-상태동리','송공-병풍','송도-병풍','증도-자은','하의-도초','남강-가산','북강-북강'],
-    S1231500:['목포-제주','목포-율목','진도-제주'],
-    S2210500:['목포-제주','목포-율목','우수영-상태동리','율목-진도','진도-죽도','진도-서거차','쉬미-가사'],
-    S1232110:['목포-홍도','송공-흑산','계마-안마','도초-우이'],
-    S1232210:['목포-제주','목포-율목','목포-홍도(가거도)','진도-죽도','진도-서거차','진도-제주'],
-    S2211200:['목포-율목','율목-진도','진도-죽도','진도-서거차'],
-    S1321100:[], S2310700:[],
-    S1322100:['목포-제주','진도-제주'],
-    S2330100:[],
-  };
-  // '항로(세부)' 표기는 그 면허항로 중 세부항로 이름에 '세부'가 들어간 배만 해당 (예: 목포-홍도 중 목포가거도 세부항로)
-  const splitRoute = r => { const m = r.match(/^(.+)\((.+)\)$/); return m ? [m[1], m[2]] : [r, '']; };
+  const ZONE_IDS = ZONES.flatMap(([,subs]) => subs.map(([id]) => id));
+  const zoneLabel = id => { for(const [name,subs] of ZONES) for(const [zid,label] of subs) if(zid === id) return name.replace(/<br>/g,'') + ' ' + label.replace(/<small>(.*?)<\/small>/,' $1'); return id; };
+  // 항로·해역 설정 (서버 저장). routes: [{code:'F02', name, zones:[구역코드], exclude:[세부코드]}, {code:'F02-09', name, zones}]
+  //  면허항로(F02)는 exclude 의 세부항로를 빼고 판단, 'F02-09'처럼 따로 등록한 세부항로는 그 해역으로 판단
+  const DEFAULT_CONFIG = {version:1, routes:[
+    ['F21','계마-안마',['S1231300','S1232110']], ['F33','향화-낙월',['S1231300','S2210300']], ['F42','향화-송이',['S1231300','S2210300']],
+    ['F02','목포-홍도',['S1231400','S2211400','S1232110'],['09']], ['F02-09','목포-홍도(목포가거도)',['S1232210']],
+    ['F41','송공-흑산',['S1231400','S2211400','S1232110']], ['F49','도초-우이',['S1231400','S2211400','S1232110']],
+    ['F48','진리-재원',['S2211300','S2211400']], ['F40','증도-자은',['S2211300','S2211400']],
+    ['F05','목포-율목',['S2211400','S1231500','S2210500','S1232210','S2211200']], ['F08','목포-상태서리',['S2211400']], ['F09','목포-상태동리',['S2211400']],
+    ['F15','목포-외달',['S2211400']], ['F36','도초-목포',['S2211400']], ['F19','웅곡-신도',['S2211400']], ['F51','우수영-상태동리',['S2211400','S2210500']],
+    ['F26','송공-병풍',['S2211400']], ['F38','송도-병풍',['S2211400']], ['F47','하의-도초',['S2211400']], ['F45','남강-가산',['S2211400']], ['F17','북강-북강',['S2211400']],
+    ['F01','목포-제주',['S1231500','S2210500','S1232210','S1322100']], ['F50','진도-제주',['S1231500','S1232210','S1322100']],
+    ['F11','율목-진도',['S2210500','S2211200']], ['F14','진도-죽도',['S2210500','S1232210','S2211200']], ['F30','진도-서거차',['S2210500','S1232210','S2211200']],
+    ['F44','쉬미-가사',['S2210500']],
+  ].map(([code,name,zones,exclude]) => exclude ? {code,name,zones,exclude} : {code,name,zones})};
+  let CONFIG, ROUTES, ROUTE_NAMES, ALL_ROUTES, EXCLUDE;
+  const validConfig = c => c && Array.isArray(c.routes) && c.routes.every(r => r && /^[A-Z]\d+(-\w+)?$/.test(r.code) && Array.isArray(r.zones)) ? c : null;
+  function applyConfig(cfg){
+    CONFIG = cfg;
+    ROUTES = Object.fromEntries(ZONE_IDS.map(id => [id, cfg.routes.filter(r => r.zones.includes(id)).map(r => r.code)]));
+    ROUTE_NAMES = Object.fromEntries(cfg.routes.map(r => [r.code, r.name || r.code]));
+    ALL_ROUTES = [...new Set(cfg.routes.map(r => r.code.split('-')[0]))];
+    EXCLUDE = Object.fromEntries(cfg.routes.filter(r => !r.code.includes('-')).map(r => [r.code, new Set(r.exclude || [])]));
+  }
+  applyConfig(DEFAULT_CONFIG);
+  const routeName = code => ROUTE_NAMES[code] || code;
   // 먼바다 기본구역 코드 (조도부근 평수구역·추자도 연안바다는 앞바다처럼 보고 대상)
   const FAR_IDS = new Set(ZONES.filter(([name]) => name.includes('먼바다')).flatMap(([,subs]) => subs.filter(([,label]) => label === '기본').map(([id]) => id)));
-  const ALL_ROUTES = [...new Set(Object.values(ROUTES).flat().map(r => splitRoute(r)[0]))];
-  const SUBS = {};
-  for(const r of Object.values(ROUTES).flat()){ const [base, sub] = splitRoute(r); if(sub) (SUBS[base] ||= new Set()).add(sub); }
-  // 이 항로 표기에 해당하는 배인지: 세부 표기면 그 세부항로 배만, 일반 표기면 다른 구역에 따로 지정된 세부항로 배는 제외
-  function onEntry(v, entry){
-    const [base, sub] = splitRoute(entry), seaway = String(v.nvg_seawy_nm || '');
-    if(v.Route !== base) return false;
-    return sub ? seaway.includes(sub) : ![...(SUBS[base] || [])].some(s => seaway.includes(s));
+  // 이 항로 코드에 해당하는 운항편인지: 세부코드가 있으면 그 세부항로만, 없으면 제외한 세부항로를 뺀 나머지
+  function onEntry(s, entry){
+    const [lc, nc] = entry.split('-');
+    if(s.lcns_seawy_cd !== lc) return false;
+    return nc ? s.nvg_seawy_cd === nc : !(EXCLUDE[lc] && EXCLUDE[lc].has(s.nvg_seawy_cd));
   }
   const STATIONS = [['530350','목포'],['1079001','안좌터미널'],['22183','신안'],['22102','칠발도'],['33010','흑산도'],['22298','홍도'],['22297','가거도'],['22184','추자도'],['1139001','하조도등대'],['959','해수서'],['22457','제주항']];
   // 예비특보 TM_EF 매칭표 (wrn_now_data 도움말): :59는 3시간, :58은 6시간 구간
@@ -993,37 +1078,42 @@ const fillBoard2 = (()=>{
     $('rd-close').addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', e => { if(e.target === dialog) dialog.close(); });
   }
-  // 여객선 현황판(vessel_status) 항로별 운항 상태: 배가 여러 척이면 한 줄로 묶음
-  function vesselState(ships){
-    if(!ships.length) return null;
-    const n = s => ships.filter(v => v.Status === s).length;
-    const ctl = n('통제'), part = n('일부통제'), run = n('정상');
-    const state = ctl && !run && !part ? 'ctl' : ctl || part ? 'part' : run ? 'run' : 'idle';
-    return {state, label:{ctl:'통제', part:'일부통제', run:'운항', idle:'비운항'}[state], ships};
+  // KOMSA 운항스케줄(출항편별): 배·면허항로별로 묶고 항차로 나눔
+  //  편도: 그날 첫 출항부터 2회씩 1항차 (섬 기점 배는 첫 편이 역방향이라 방향으로 나누면 어긋남) / 순환: 출항 1회 = 1항차
+  const hhmm = t => String(t ?? '').padStart(4,'0').replace(/^(\d\d)(\d\d)$/, '$1:$2');
+  const isCtl = s => String(s.nvg_se_nm || '').includes('통제');
+  function shipsOf(sched){
+    const by = new Map();
+    for(const s of sched){
+      if(!ALL_ROUTES.includes(s.lcns_seawy_cd)) continue;
+      const key = s.psnshp_cd + '|' + s.lcns_seawy_cd;
+      if(!by.has(key)) by.set(key, []);
+      by.get(key).push(s);
+    }
+    return [...by.values()].map(list => {
+      list.sort((a,b) => Number(a.sail_tm) - Number(b.sail_tm));
+      const voyages = [];
+      const per = list[0].seawy_se_nm === '순환항로' ? 1 : 2;
+      for(let i = 0; i < list.length; i += per) voyages.push(list.slice(i, i + per));
+      return {name: list[0].psnshp_nm, code: list[0].lcns_seawy_cd, sailings: list, voyages};
+    });
   }
-  // 통제된 항차와 첫 출항 시각: 편도 2회=1항차, 순환 1회=1항차 (현황판 항차 번호와 같은 규칙)
-  // 전체 통제는 모든 항차, 일부통제는 비고에 적힌 항차만
-  function controlledVoyages(v){
-    const sails = String(v.sail_tms || '').split(',').map(x => x.trim()).filter(Boolean);
-    const per = v.seawy_se_nm === '순환항로' ? 1 : 2, voyages = [];
-    for(let i = 0; i < sails.length; i += per) voyages.push({n: voyages.length + 1, start: sails[i]});
-    if(v.Status === '통제') return voyages;
-    const listed = new Set([...String(v.Remarks || '').split('-').slice(1).join('-').matchAll(/(\d+)항차/g)].map(m => Number(m[1])));
-    return voyages.filter(x => listed.has(x.n));
-  }
-  const shipLines = st => st ? st.ships.map(v => `${v.psnshp_nm}: ${v.Remarks || v.Status}`).join('\n') : '현황판 자료 없음';
-  function renderRoutes(wr, wrOk, nowDigits, vessels){
+  const sailLine = s => `${hhmm(s.sail_tm)} ${s.nvg_se_nm || ''}${s.cntrl_rsn_nm ? '(' + s.cntrl_rsn_nm + ')' : s.nnavi_rsn_nm ? '(' + s.nnavi_rsn_nm + ')' : ''}`;
+  function renderRoutes(wr, wrOk, nowDigits, sched){
     const list = $('route-list'), btn = $('btnRoutes');
     if(!list) return;
-    const vesselOk = Array.isArray(vessels);
-    const entries = [...new Set(Object.values(ROUTES).flat())];
-    const op = new Map(entries.map(r => [r, vesselOk ? vesselState(vessels.filter(v => onEntry(v, r))) : null]));
-    $('rd-source').textContent = `특보 수집 ${short(FETCHED['wb-warning'])} · 현황판 ${vesselOk ? short(FETCHED['vessel-status']) + ' 조회' : '자료 없음'}`;
+    const schedOk = Array.isArray(sched);
+    const sailings = schedOk ? sched : [];
+    const ships = shipsOf(sailings);
+    // 항로 코드별 통제 운항편 (왼쪽 표 이름표 표시용)
+    const ctlOf = entry => sailings.filter(s => onEntry(s, entry) && isCtl(s));
+    const tipOf = entry => { const ss = sailings.filter(s => onEntry(s, entry)).sort((a,b) => Number(a.sail_tm) - Number(b.sail_tm)); return ss.length ? [...new Set(ss.map(s => s.psnshp_nm))].map(n => `${n}: ` + ss.filter(s => s.psnshp_nm === n).map(sailLine).join(', ')).join('\n') : '운항스케줄 없음'; };
+    $('rd-source').textContent = `특보 수집 ${short(FETCHED['wb-warning'])} · 운항스케줄 ${schedOk ? short(FETCHED['ferry-schedule']) + ' 수집' : '자료 없음'}`;
     $('rd-table').tBodies[0].innerHTML = ZONES.map(([name,subs]) => subs.map(([id,label],i) => {
       const rows = wrOk ? activeRows(wr.rows, id) : [];
-      // 항로는 늘 전체 표시, 특보가 있으면 등급 색으로 (경보 빨강 · 주의보 파랑 · 예비특보 노랑), 통제 항로는 표시
+      // 항로는 늘 전체 표시, 특보가 있으면 등급 색으로 (경보 빨강 · 주의보 파랑 · 예비특보 노랑), 통제 운항편이 있는 항로는 표시
       const cls = rows.some(w => w.lvl==='경보') ? 'severe-row' : rows.some(w => w.lvl!=='예비') ? 'adv-row' : rows.length ? 'pre-row' : '';
-      const routes = (ROUTES[id]||[]).length ? ROUTES[id].map(r => { const st = op.get(r); const c = st && (st.state==='ctl' || st.state==='part') ? ` class="ctl"` : ''; return `<span${c} title="${esc(shipLines(st))}">${esc(r)}${c ? `<b>${st.label}</b>` : ''}</span>`; }).join('') : '<em>해당 항로 없음</em>';
+      const routes = (ROUTES[id]||[]).length ? ROUTES[id].map(r => { const c = ctlOf(r).length ? ' class="ctl"' : ''; return `<span${c} title="${esc(tipOf(r))}">${esc(routeName(r))}${c ? '<b>통제</b>' : ''}</span>`; }).join('') : '<em>해당 항로 없음</em>';
       const status = !wrOk ? '<span class="badge unavailable">확인 필요</span>' : !rows.length ? '<span class="badge none">없음</span>'
         : rows.map(w => `<div class="warning-item" title="${esc(`발표 ${w.tmFc.slice(4,8).replace(/(..)(..)/,'$1/$2')} ${w.tmFc.slice(8,10)}:${w.tmFc.slice(10,12)}` + (w.edTm ? ` · 해제예고 ${w.edTm}` : ''))}"><span class="badge ${w.lvl==='경보' ? 'severe' : w.lvl==='예비' ? 'preliminary' : 'advisory'}">${esc(w.wrn)}<br>${esc(levelText(w))}</span>${w.lvl!=='예비' && w.tmEf > nowDigits ? '<span class="upcoming">발효 예정</span>' : ''}</div>`).join('');
       return `<tr class="${[i===0 ? 'group-start' : '', cls].join(' ').trim()}">${i===0 ? `<th rowspan="${subs.length}" scope="rowgroup">${name}</th>` : ''}<td class="zone">${label}</td><td>${status}</td><td class="rd-route-cell">${routes}</td></tr>`;
@@ -1048,33 +1138,155 @@ const fillBoard2 = (()=>{
       groups[state].push({route, own});
     }
     // 통제 항차별 보고 구분: 항차 첫 출항 시각에 발효 중인 특보 기준
-    //  먼바다 기본구역 특보 → 당연통제(보고 안 함) / 앞바다(평수·연안 포함) 특보 → 해경 / 특보 발효 전 → 해수청
+    //  경보(어느 구역이든) 또는 먼바다 기본구역 특보 → 당연통제(보고 안 함) / 앞바다(평수·연안 포함) 주의보 → 해경 / 특보 발효 전 → 해수청
+    //  연장·변경 발표는 그 전부터 특보 중이었으므로 오늘 0시부터 발효로 봄 (변경 전 등급은 알 수 없어 주의보로 봄)
     const warnings = ZONES.flatMap(([,subs]) => subs).flatMap(([id]) => activeRows(wr.rows, id).filter(w => w.lvl !== '예비')
-      .flatMap(w => (ROUTES[id] || []).map(entry => ({entry, far: FAR_IDS.has(id), tmEf: w.tmEf}))));
-    const classify = (v, start) => {
+      .flatMap(w => (ROUTES[id] || []).flatMap(entry => {
+        const now = {entry, auto: FAR_IDS.has(id) || w.lvl === '경보', tmEf: w.tmEf};
+        if(!['연장','변경'].includes(w.cmd)) return [now];
+        return [now, {entry, auto: FAR_IDS.has(id) || (w.cmd === '연장' && w.lvl === '경보'), tmEf: nowDigits.slice(0,8) + '0000'}];
+      })));
+    const classify = (s, start) => {
       const at = nowDigits.slice(0,8) + start.replace(':','');
-      const on = warnings.filter(x => x.tmEf <= at && onEntry(v, x.entry));
-      return on.some(x => x.far) ? 'auto' : on.length ? 'cg' : 'mof';
+      const on = warnings.filter(x => x.tmEf <= at && onEntry(s, x.entry));
+      return on.some(x => x.auto) ? 'auto' : on.length ? 'cg' : 'mof';
     };
-    const ships = (vesselOk ? vessels : []).filter(v => ALL_ROUTES.includes(v.Route) && (v.Status==='통제' || v.Status==='일부통제'))
-      .sort((a,b) => ALL_ROUTES.indexOf(a.Route) - ALL_ROUTES.indexOf(b.Route) || String(a.psnshp_nm).localeCompare(String(b.psnshp_nm), 'ko'));
     const rows = {cg:[], mof:[]};
-    for(const v of ships){
+    for(const ship of ships){
       const by = {cg:[], mof:[], auto:[]};
-      for(const x of controlledVoyages(v)) by[classify(v, x.start)].push(x.start);
-      // 통제 항차가 1개면 그 출항 시각만, 2개 이상이면 첫 출항 시각 뒤에 '~'
-      for(const k of ['cg','mof']) if(by[k].length) rows[k].push({v, first: by[k][0], when: by[k][0] + (by[k].length > 1 ? '~' : '')});
+      for(const v of ship.voyages){
+        const ctl = v.filter(isCtl);
+        if(!ctl.length) continue;                              // 날씨 통제가 아닌 비운·정상 항차는 제외
+        by[classify(v[0], hhmm(v[0].sail_tm))].push({at: hhmm(ctl[0].sail_tm), reason: ctl[0].cntrl_rsn_nm || ''});
+      }
+      // 통제 항차가 1개면 그 출항 시각만, 2개 이상이면 첫 통제 출항 시각 뒤에 '~'
+      for(const k of ['cg','mof']) if(by[k].length) rows[k].push({ship, first: by[k][0].at, when: by[k][0].at + (by[k].length > 1 ? '~' : ''), tip: ship.sailings.map(sailLine).join(', ')});
     }
-    for(const k of ['cg','mof']) rows[k].sort((a,b) => a.first.localeCompare(b.first));  // 첫 통제 시각순 (같으면 항로 순서 유지)
-    const report = (title, sub, list) => `<section class="route-report"><h3>${title}<span>${sub}</span></h3>` + (list.length
-      ? `<table>${list.map(({v, when}) => `<tr title="${esc(v.Remarks || v.Status)}"><td>${esc(v.Route)}</td><td>${esc(v.psnshp_nm)}</td><td>${esc(when)}</td></tr>`).join('')}</table>`
+    const order = r => ALL_ROUTES.indexOf(r.ship.code);
+    for(const k of ['cg','mof']) rows[k].sort((a,b) => a.first.localeCompare(b.first) || order(a) - order(b) || a.ship.name.localeCompare(b.ship.name, 'ko'));
+    const report = (title, sub, items) => `<section class="route-report"><h3>${title}<span>${sub}</span></h3>` + (items.length
+      ? `<table>${items.map(({ship, when, tip}) => `<tr title="${esc(tip)}"><td>${esc(routeName(ship.code))}</td><td>${esc(ship.name)}</td><td>${esc(when)}</td></tr>`).join('')}</table>`
       : '<p class="route-empty">없음</p>') + '</section>';
-    list.innerHTML = vesselOk ? report('해경 보고', '앞바다 특보 중 통제', rows.cg) + report('해수청 보고', '특보 없이 통제', rows.mof) : '<p class="route-empty">현황판 자료 없음</p>';
+    const missing = schedOk ? Object.keys(ROUTE_NAMES).filter(e => !sailings.some(s => onEntry(s, e))).map(routeName) : [];
+    list.innerHTML = schedOk
+      ? report('해경 보고', '앞바다 특보 중 통제', rows.cg) + report('해수청 보고', '특보 없이 통제', rows.mof)
+        + (missing.length ? `<p class="route-missing">오늘 운항스케줄에 없는 항로: ${esc(missing.join(', '))}</p>` : '')
+      : '<p class="route-empty">운항스케줄 자료 없음</p>';
     const severe = r => r.own.some(h => h.w.lvl==='경보');
     btn.className = 'route-btn' + (!groups.active.length ? ' none' : groups.active.some(severe) ? ' severe' : '');
     btn.querySelector('b').textContent = groups.active.length;
   }
-  return function fill(D){
+  // ---------- 항로·해역 설정 창: 항로코드로 등록, 해역 추가·삭제, 세부항로 제외 → 제외한 세부항로만 따로 등록 ----------
+  let lastData = null, draft = null, selected = null, dirty = false;
+  const sd = $('rs-dialog');
+  const scheduleOf = () => Array.isArray(lastData?.['ferry-schedule']) ? lastData['ferry-schedule'] : [];
+  const findRoute = code => draft.find(r => r.code === code);
+  const setMsg = (t, err) => { const m = $('rs-msg'); m.textContent = t || ''; m.className = 'rs-msg' + (err ? ' err' : ''); };
+  const markDirty = () => { dirty = true; $('rs-save').disabled = false; $('rs-status').textContent = '저장하지 않은 변경 있음'; };
+  // 세부항로 목록: 오늘 운항스케줄 + 이미 제외·등록된 세부코드
+  function subRoutesOf(lc){
+    const found = new Map();
+    for(const s of scheduleOf()) if(s.lcns_seawy_cd === lc && s.nvg_seawy_cd) found.set(s.nvg_seawy_cd, s.nvg_seawy_nm || '');
+    for(const nc of findRoute(lc)?.exclude || []) if(!found.has(nc)) found.set(nc, '');
+    for(const r of draft) if(r.code.startsWith(lc + '-')){ const nc = r.code.split('-')[1]; if(!found.has(nc)) found.set(nc, ''); }
+    return [...found].sort((a,b) => a[0].localeCompare(b[0]));
+  }
+  function renderList(){
+    // 면허항로 아래에 따로 등록한 세부항로를 들여서 보여 줌
+    const bases = draft.filter(r => !r.code.includes('-'));
+    const subsOf = lc => draft.filter(r => r.code.startsWith(lc + '-'));
+    const item = (r, sub) => `<li><button type="button" data-code="${esc(r.code)}" aria-current="${r.code === selected}" ${sub ? 'class="rs-sub"' : ''}><code>${esc(r.code)}</code>${esc(r.name)}<small>해역 ${r.zones.length}</small></button></li>`;
+    $('rs-list').innerHTML = bases.map(r => item(r, false) + subsOf(r.code).map(s => item(s, true)).join('')).join('')
+      + draft.filter(r => r.code.includes('-') && !findRoute(r.code.split('-')[0])).map(r => item(r, true)).join('');
+  }
+  function renderDetail(){
+    const r = selected && findRoute(selected);
+    if(!r){ $('rs-detail').innerHTML = '<p class="rs-empty">왼쪽에서 항로를 고르거나, 항로코드를 입력해 등록하세요.</p>'; return; }
+    const [lc, nc] = r.code.split('-');
+    const others = ZONE_IDS.filter(id => !r.zones.includes(id));
+    let html = `<h3>${esc(r.code)} ${esc(r.name)}</h3><p class="rs-note">${nc ? `${esc(routeName(lc))} 중 세부항로 ${esc(nc)}만 이 해역으로 판단합니다.` : '세부항로를 제외하지 않으면 이 항로의 모든 세부항로에 아래 해역이 적용됩니다.'}</p>`
+      + `<h4>해당 해역 (${r.zones.length})</h4>`
+      + (r.zones.length ? `<ul class="rs-zones">${r.zones.map(id => `<li>${esc(zoneLabel(id))}${FAR_IDS.has(id) ? ' <span class="far">먼바다 · 당연통제</span>' : ''}<button type="button" data-zone-del="${id}">삭제</button></li>`).join('')}</ul>` : '<p class="rs-note">지정된 해역이 없습니다.</p>')
+      + (others.length ? `<div class="rs-row"><select id="rs-zone-add" aria-label="추가할 해역">${others.map(id => `<option value="${id}">${esc(zoneLabel(id))}</option>`).join('')}</select><button type="button" id="rs-zone-add-btn">해역 추가</button></div>` : '');
+    if(!nc){
+      const subs = subRoutesOf(lc), ex = new Set(r.exclude || []);
+      html += `<h4>세부항로 제외</h4><p class="rs-note">제외한 세부항로는 위 해역으로 판단하지 않습니다. 제외한 세부항로만 따로 등록해 다른 해역을 지정할 수 있습니다.</p>`
+        + (subs.length ? `<table class="rs-subs">${subs.map(([sc, sn]) => { const own = findRoute(lc + '-' + sc);
+            return `<tr><td><code>${esc(sc)}</code> ${esc(sn || '(오늘 운항 없음)')}</td><td><label><input type="checkbox" data-sub-ex="${esc(sc)}" ${ex.has(sc) ? 'checked' : ''}> 제외</label></td><td>${ex.has(sc) ? (own ? `<button type="button" data-goto="${esc(own.code)}">따로 등록됨 · 해역 ${own.zones.length}</button>` : `<button type="button" data-sub-add="${esc(sc)}">따로 등록</button>`) : ''}</td></tr>`; }).join('')}</table>`
+          : '<p class="rs-note">오늘 운항스케줄에 이 항로의 세부항로가 없습니다.</p>');
+    }
+    html += `<h4>항로 삭제</h4><button type="button" class="rs-danger" id="rs-del">${esc(r.code)} 삭제</button>`;
+    $('rs-detail').innerHTML = html;
+  }
+  const renderSettings = () => { renderList(); renderDetail(); };
+  function openSettings(){
+    draft = structuredClone(CONFIG.routes); selected = selected && findRoute(selected) ? selected : draft[0]?.code || null; dirty = false;
+    $('rs-save').disabled = true; $('rs-status').textContent = ''; setMsg(''); $('rs-code').value = '';
+    renderSettings(); sd.showModal();
+  }
+  if(sd){
+    $('rd-settings').addEventListener('click', openSettings);
+    $('rs-close').addEventListener('click', () => { if(!dirty || confirm('저장하지 않은 변경이 있습니다. 닫을까요?')) sd.close(); });
+    sd.addEventListener('cancel', e => { if(dirty && !confirm('저장하지 않은 변경이 있습니다. 닫을까요?')) e.preventDefault(); });
+    $('rs-list').addEventListener('click', e => { const b = e.target.closest('[data-code]'); if(b){ selected = b.dataset.code; renderSettings(); } });
+    $('rs-add').addEventListener('submit', e => {
+      e.preventDefault();
+      const code = $('rs-code').value.trim().toUpperCase();
+      if(!/^[A-Z]\d{2,}$/.test(code)) return setMsg('항로코드 형식이 아닙니다 (예: F21)', true);
+      if(findRoute(code)){ selected = code; renderSettings(); return setMsg(`${code}는 이미 등록돼 있습니다`, true); }
+      const hit = scheduleOf().find(s => s.lcns_seawy_cd === code);
+      let name = hit?.lcns_seawy_nm;
+      if(!name){ name = prompt(`${code}는 오늘 운항스케줄에 없습니다. 항로 이름을 입력하면 그대로 등록합니다.`, ''); if(!name) return setMsg('등록을 취소했습니다'); }
+      draft.push({code, name, zones:[]}); selected = code; $('rs-code').value = '';
+      setMsg(`${code} ${name} 등록 · 해역을 추가하세요`); markDirty(); renderSettings();
+    });
+    $('rs-detail').addEventListener('click', e => {
+      const r = findRoute(selected); if(!r) return;
+      const t = e.target;
+      if(t.dataset.zoneDel){ r.zones = r.zones.filter(id => id !== t.dataset.zoneDel); markDirty(); renderSettings(); }
+      else if(t.id === 'rs-zone-add-btn'){ const id = $('rs-zone-add').value; r.zones.push(id); r.zones.sort((a,b) => ZONE_IDS.indexOf(a) - ZONE_IDS.indexOf(b)); markDirty(); renderSettings(); }
+      else if(t.dataset.subAdd){
+        const sc = t.dataset.subAdd, sn = subRoutesOf(r.code).find(([c]) => c === sc)?.[1];
+        draft.push({code: r.code + '-' + sc, name: `${r.name}(${sn || sc})`, zones:[]});
+        selected = r.code + '-' + sc; markDirty(); renderSettings(); setMsg(`${selected} 등록 · 이 세부항로의 해역을 추가하세요`);
+      }
+      else if(t.dataset.goto){ selected = t.dataset.goto; renderSettings(); }
+      else if(t.id === 'rs-del'){
+        const subs = draft.filter(x => x.code.startsWith(r.code + '-'));
+        if(!confirm(`${r.code} ${r.name}` + (subs.length ? `와 따로 등록한 세부항로 ${subs.length}개` : '') + '를 삭제할까요?')) return;
+        draft = draft.filter(x => x !== r && !subs.includes(x)); selected = draft[0]?.code || null; markDirty(); renderSettings();
+      }
+    });
+    $('rs-detail').addEventListener('change', e => {
+      const sc = e.target.dataset?.subEx; if(!sc) return;
+      const r = findRoute(selected), ex = new Set(r.exclude || []), own = findRoute(r.code + '-' + sc);
+      if(e.target.checked) ex.add(sc);
+      else {
+        if(own && !confirm(`따로 등록한 ${own.code}도 함께 삭제됩니다. 제외를 풀까요?`)){ e.target.checked = true; return; }
+        ex.delete(sc); if(own) draft = draft.filter(x => x !== own);
+      }
+      if(ex.size) r.exclude = [...ex].sort(); else delete r.exclude;
+      markDirty(); renderSettings();
+    });
+    $('rs-save').addEventListener('click', async () => {
+      const empty = draft.filter(r => !r.zones.length).map(r => r.code);
+      if(empty.length && !confirm(`해역이 없는 항로가 있습니다 (${empty.join(', ')}). 그대로 저장할까요?`)) return;
+      const cfg = {version:1, updatedAt:new Date().toISOString(), routes:draft};
+      $('rs-save').disabled = true; $('rs-status').textContent = '저장 중…';
+      try{
+        await ROUTE_STORE.save(cfg);
+        dirty = false; $('rs-status').textContent = '저장했습니다';
+        if(lastData){ lastData['route-config'] = structuredClone(cfg); fill(lastData); }
+      }catch(err){ $('rs-save').disabled = false; $('rs-status').textContent = '저장 실패: ' + (err.message || err); }
+    });
+  }
+  function fill(D){
+    lastData = D;
+    applyConfig(validConfig(D['route-config']) || DEFAULT_CONFIG);
+    fillMain(D);
+  }
+  return fill;
+  function fillMain(D){
     try{
       const now = new Date(), nowDigits = kst(now).replace(/\D/g,'').slice(0,12), today = nowDigits.slice(0,8);
       const fc = D['wb-sea-forecast'], wr = D['wb-warning'], buoy = D['kma-buoy-snapshot']||{}, nm = D['wb-nmpnt']||{}, comment = D['wb-weather-comment']||{};
@@ -1088,7 +1300,7 @@ const fillBoard2 = (()=>{
       const wrOk = !!(wr && Array.isArray(wr.rows));
       $('b2-warning').tBodies[0].innerHTML = ZONES.map(([name,list])=>list.map(([id,label],i)=>`<tr data-region="${id}" class="${i===0?'group-start':''}">${i===0?`<th rowspan="${list.length}" scope="rowgroup">${name}</th>`:''}<td class="zone" title="${id}">${label}</td>${warningCells(wrOk ? activeRows(wr.rows,id) : [], wrOk, nowDigits)}</tr>`).join('')).join('');
       $('b2-warning-source').textContent = `수집 ${short(FETCHED['wb-warning'])} · 발표 기준 · 14개 구역`;
-      renderRoutes(wr, wrOk, nowDigits, D['vessel-status']);
+      renderRoutes(wr, wrOk, nowDigits, D['ferry-schedule']);
       const obs = new Map((buoy.rows||[]).map(x=>[String(x.stationId),x]));
       $('b2-obs').tBodies[0].innerHTML = STATIONS.map(([id,name])=>{
         const r = id==='1079001' ? nm.byId?.[id] : obs.get(id);
@@ -1097,8 +1309,14 @@ const fillBoard2 = (()=>{
           const n = Number(v); const cl = kind==='wave' ? (n>=3.5 ? 'purple' : n>=2 ? 'red' : '') : kind==='wind' && n>=12 ? 'red' : '';
           return `<td class="${cl}">${esc(v)}</td>`;
         };
+        // 목포 시정은 수정 모드에서 언제든 고칠 수 있음 (기존 기상상황부 Z8 칸과 같은 값)
+        if(id === '530350'){
+          const vis = store.get(editKey('board','Z8')) ?? r?.visibility ?? '';
+          return `<tr><td>${name}</td>${r ? val(r.hhmm)+val(r.windDirection)+val(r.windSpeed,'wind')+val(r.gust,'wind')+val(r.waveHeight,'wave')+val(r.waveHeightMax,'wave') : '<td colspan="6" class="missing">자료 없음</td>'}<td id="b2-mokpo-vis" class="b2-editable">${esc(vis)}</td></tr>`;
+        }
         return `<tr><td>${name}</td>${r ? val(r.hhmm)+val(r.windDirection)+val(r.windSpeed,'wind')+val(r.gust,'wind')+val(r.waveHeight,'wave')+val(r.waveHeightMax,'wave')+val(r.visibility) : '<td colspan="7" class="missing">자료 없음</td>'}</tr>`;
       }).join('');
+      if(document.body.classList.contains('editing')) $('b2-mokpo-vis')?.setAttribute('contenteditable','true');
       $('b2-obs-source').textContent = `수집 ${short(FETCHED['kma-buoy-snapshot'])} · 안좌 ${short(FETCHED['wb-nmpnt'])}`;
       $('b2-comment').textContent = comment.text || '기상정보 분석 자료를 받지 못했습니다.';
       $('b2-comment-source').textContent = `수집 ${short(FETCHED['wb-weather-comment'])}`;
@@ -1119,9 +1337,11 @@ async function loadData(){
     DATA = {}; FETCHED = {};
     for(const r of rows){ DATA[r.id] = r.payload; FETCHED[r.id] = r.fetchedAt; }
     try{
-      const vr = await fetch(`${SB_URL}/rest/v1/vessel_status?select=Route,Status,Remarks,psnshp_nm,sail_tms,seawy_se_nm,nvg_seawy_nm`, {headers:{apikey:SB_KEY, Authorization:'Bearer '+SB_KEY}, cache:'no-store'});
-      if(vr.ok){ DATA['vessel-status'] = await vr.json(); FETCHED['vessel-status'] = new Date().toISOString(); }
+      const sr = await fetch(`${SB_URL}/rest/v1/external_api_cache?select=params,payload,fetchedAt&path=eq./B554035/oprt-schd-info-v2/get-oprt-schd-info-v2&params->>rlvtYmd=eq.${ymd(kstNow())}&order=fetchedAt.desc&limit=5`, {headers:{apikey:SB_KEY, Authorization:'Bearer '+SB_KEY}, cache:'no-store'});
+      const full = sr.ok ? (await sr.json()).find(c => !c.params?.psnshpNm && Array.isArray(c.payload?.response?.body?.items?.item) && c.payload.response.body.items.item.length >= Number(c.payload.response.body.totalCount || 0)) : null;
+      if(full){ DATA['ferry-schedule'] = full.payload.response.body.items.item; FETCHED['ferry-schedule'] = full.fetchedAt; }
     }catch(e){}
+    try{ DATA['route-config'] = await ROUTE_STORE.load(); }catch(e){}  // 항로·해역 설정 (없으면 기본 설정)
   } else {
     DATA = SNAPSHOT.data; FETCHED = SNAPSHOT.fetched;
   }

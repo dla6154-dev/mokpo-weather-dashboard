@@ -7,6 +7,7 @@
 //  job=all    : 전부
 //  job=manual-refresh : 웹앱 버튼으로 전체 자료(부이 포함)를 한 번씩 다시 수집
 //  job=manual-one&only=<항목> : 웹앱 '자료 업데이트' 항목 클릭 시 해당 자료만 다시 수집 (항목별 1분에 1번)
+//  job=save-route-config : 웹앱 '항로·해역 설정' 저장 (POST 본문 = 설정, 직전 설정은 wb-route-config-prev)
 // 결과는 public.external_api_cache (id = wb-*) 에 저장. API 키는 jindo_app_secret 테이블에서 읽음.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
@@ -361,6 +362,29 @@ async function dailyMissing(): Promise<string[]> {
   return miss;
 }
 
+// ---------- 항로·해역 설정 검사 ----------
+const ROUTE_ZONE_IDS = new Set(['S1231300', 'S2210300', 'S1231400', 'S2211300', 'S2211400', 'S1231500', 'S2210500', 'S1232110', 'S1232210', 'S2211200', 'S1321100', 'S2310700', 'S1322100', 'S2330100']);
+function checkRouteConfig(body: any) {
+  const routes = body?.routes;
+  if (!Array.isArray(routes) || routes.length > 300) throw new Error('routes 형식 오류');
+  const seen = new Set<string>();
+  const out = routes.map((r: any) => {
+    const code = String(r?.code ?? '');
+    if (!/^[A-Z]\d{1,3}(-[0-9A-Za-z]{1,4})?$/.test(code) || seen.has(code)) throw new Error(`항로코드 오류: ${code}`);
+    seen.add(code);
+    const name = String(r?.name ?? '').slice(0, 60);
+    const zones = Array.isArray(r?.zones) ? [...new Set(r.zones.map(String))] : null;
+    if (!zones || zones.some((z) => !ROUTE_ZONE_IDS.has(z as string))) throw new Error(`해역 코드 오류: ${code}`);
+    const route: Record<string, unknown> = { code, name, zones };
+    if (r?.exclude != null) {
+      if (code.includes('-') || !Array.isArray(r.exclude) || r.exclude.length > 30 || r.exclude.some((x: any) => !/^[0-9A-Za-z]{1,4}$/.test(String(x)))) throw new Error(`세부항로 제외 오류: ${code}`);
+      if (r.exclude.length) route.exclude = [...new Set(r.exclude.map(String))];
+    }
+    return route;
+  });
+  return { version: 1, updatedAt: String(body?.updatedAt ?? '').slice(0, 40), routes: out };
+}
+
 // ---------- 엔트리 ----------
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS_JSON });
@@ -368,10 +392,23 @@ Deno.serve(async (req) => {
   const job = u.searchParams.get('job') || 'fast';
   const manual = job === 'manual-refresh';
   const single = job === 'manual-one';
-  if ((manual || single) && req.method !== 'POST') {
+  const routeConfig = job === 'save-route-config';
+  if ((manual || single || routeConfig) && req.method !== 'POST') {
     return new Response(JSON.stringify({ ok: false, error: 'POST required' }), { status: 405, headers: CORS_JSON });
   }
   let debug = u.searchParams.get('debug') === '1';
+  // 웹앱 '항로·해역 설정' 저장: 누구나 저장 가능, 형식만 검사하고 직전 설정은 wb-route-config-prev 에 보관
+  if (routeConfig) {
+    try {
+      const cfg = checkRouteConfig(await req.json());
+      const prev = await load('wb-route-config');
+      if (prev) await save('wb-route-config-prev', prev, 365 * 86400, 'web/route-config');
+      await save('wb-route-config', { ...cfg, savedAt: new Date().toISOString() }, 365 * 86400, 'web/route-config');
+      return new Response(JSON.stringify({ ok: true, routes: cfg.routes.length }), { headers: CORS_JSON });
+    } catch (e) {
+      return new Response(JSON.stringify({ ok: false, error: String(e) }), { status: 400, headers: CORS_JSON });
+    }
+  }
   try {
     const k = await secrets();
     const given = req.headers.get('x-wb-secret') || '';
