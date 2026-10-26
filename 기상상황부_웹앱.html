@@ -1001,16 +1001,15 @@ const fillBoard2 = (()=>{
     const state = ctl && !run && !part ? 'ctl' : ctl || part ? 'part' : run ? 'run' : 'idle';
     return {state, label:{ctl:'통제', part:'일부통제', run:'운항', idle:'비운항'}[state], ships};
   }
-  // 첫 통제 시각: 전체 통제는 첫 출항, 일부통제는 비고의 항차(시각) → 현황판 수집과 같은 항차 번호 규칙(편도 2회=1항차, 순환 1회=1항차)
-  function firstControl(v){
+  // 통제된 항차와 첫 출항 시각: 편도 2회=1항차, 순환 1회=1항차 (현황판 항차 번호와 같은 규칙)
+  // 전체 통제는 모든 항차, 일부통제는 비고에 적힌 항차만
+  function controlledVoyages(v){
     const sails = String(v.sail_tms || '').split(',').map(x => x.trim()).filter(Boolean);
-    if(v.Status === '통제') return sails[0] || '';
-    const times = [];
-    for(const m of String(v.Remarks || '').split('-').slice(1).join('-').matchAll(/(\d+)항차(?:\((\d{2})(\d{2})\))?/g)){
-      if(m[2]) times.push(`${m[2]}:${m[3]}`);
-      else { const n = Number(m[1]), at = sails[v.seawy_se_nm === '순환항로' ? n-1 : 2*n-2]; if(at) times.push(at); }
-    }
-    return times.sort()[0] || '';
+    const per = v.seawy_se_nm === '순환항로' ? 1 : 2, voyages = [];
+    for(let i = 0; i < sails.length; i += per) voyages.push({n: voyages.length + 1, start: sails[i]});
+    if(v.Status === '통제') return voyages;
+    const listed = new Set([...String(v.Remarks || '').split('-').slice(1).join('-').matchAll(/(\d+)항차/g)].map(m => Number(m[1])));
+    return voyages.filter(x => listed.has(x.n));
   }
   const shipLines = st => st ? st.ships.map(v => `${v.psnshp_nm}: ${v.Remarks || v.Status}`).join('\n') : '현황판 자료 없음';
   function renderRoutes(wr, wrOk, nowDigits, vessels){
@@ -1048,17 +1047,29 @@ const fillBoard2 = (()=>{
       const own = hits.filter(h => h.state===state);
       groups[state].push({route, own});
     }
-    // 통제된 배: 특보 중 통제 → 해경 보고, 특보 없이 통제 → 해수청 보고 (항로 · 배 이름 · 첫 통제 시각~)
-    // 먼바다(기본구역) 특보로 통제된 배는 당연통제라 보고하지 않음 → 앞바다 특보만 걸린 통제가 해경 보고 대상
-    const hitIn = (v, far) => groups.active.some(r => onEntry(v, r.route) && r.own.some(h => FAR_IDS.has(h.id) === far));
-    const auto = v => hitIn(v, true);
-    const warned = { has: v => hitIn(v, false) };
+    // 통제 항차별 보고 구분: 항차 첫 출항 시각에 발효 중인 특보 기준
+    //  먼바다 기본구역 특보 → 당연통제(보고 안 함) / 앞바다(평수·연안 포함) 특보 → 해경 / 특보 발효 전 → 해수청
+    const warnings = ZONES.flatMap(([,subs]) => subs).flatMap(([id]) => activeRows(wr.rows, id).filter(w => w.lvl !== '예비')
+      .flatMap(w => (ROUTES[id] || []).map(entry => ({entry, far: FAR_IDS.has(id), tmEf: w.tmEf}))));
+    const classify = (v, start) => {
+      const at = nowDigits.slice(0,8) + start.replace(':','');
+      const on = warnings.filter(x => x.tmEf <= at && onEntry(v, x.entry));
+      return on.some(x => x.far) ? 'auto' : on.length ? 'cg' : 'mof';
+    };
     const ships = (vesselOk ? vessels : []).filter(v => ALL_ROUTES.includes(v.Route) && (v.Status==='통제' || v.Status==='일부통제'))
       .sort((a,b) => ALL_ROUTES.indexOf(a.Route) - ALL_ROUTES.indexOf(b.Route) || String(a.psnshp_nm).localeCompare(String(b.psnshp_nm), 'ko'));
-    const report = (title, sub, rows) => `<section class="route-report"><h3>${title}<span>${sub}</span></h3>` + (rows.length
-      ? `<table>${rows.map(v => { const t = firstControl(v); return `<tr title="${esc(v.Remarks || v.Status)}"><td>${esc(v.Route)}</td><td>${esc(v.psnshp_nm)}</td><td>${t ? esc(t) + '~' : '—'}</td></tr>`; }).join('')}</table>`
+    const rows = {cg:[], mof:[]};
+    for(const v of ships){
+      const by = {cg:[], mof:[], auto:[]};
+      for(const x of controlledVoyages(v)) by[classify(v, x.start)].push(x.start);
+      // 통제 항차가 1개면 그 출항 시각만, 2개 이상이면 첫 출항 시각 뒤에 '~'
+      for(const k of ['cg','mof']) if(by[k].length) rows[k].push({v, first: by[k][0], when: by[k][0] + (by[k].length > 1 ? '~' : '')});
+    }
+    for(const k of ['cg','mof']) rows[k].sort((a,b) => a.first.localeCompare(b.first));  // 첫 통제 시각순 (같으면 항로 순서 유지)
+    const report = (title, sub, list) => `<section class="route-report"><h3>${title}<span>${sub}</span></h3>` + (list.length
+      ? `<table>${list.map(({v, when}) => `<tr title="${esc(v.Remarks || v.Status)}"><td>${esc(v.Route)}</td><td>${esc(v.psnshp_nm)}</td><td>${esc(when)}</td></tr>`).join('')}</table>`
       : '<p class="route-empty">없음</p>') + '</section>';
-    list.innerHTML = vesselOk ? report('해경 보고', '앞바다 특보 중 통제', ships.filter(v => !auto(v) && warned.has(v))) + report('해수청 보고', '특보 없이 통제', ships.filter(v => !auto(v) && !warned.has(v))) : '<p class="route-empty">현황판 자료 없음</p>';
+    list.innerHTML = vesselOk ? report('해경 보고', '앞바다 특보 중 통제', rows.cg) + report('해수청 보고', '특보 없이 통제', rows.mof) : '<p class="route-empty">현황판 자료 없음</p>';
     const severe = r => r.own.some(h => h.w.lvl==='경보');
     btn.className = 'route-btn' + (!groups.active.length ? ' none' : groups.active.some(severe) ? ' severe' : '');
     btn.querySelector('b').textContent = groups.active.length;
