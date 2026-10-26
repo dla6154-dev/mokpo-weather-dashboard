@@ -1042,6 +1042,16 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
         cur_keys = {key(w) for w in warnings}
         new_warnings = [w for w in warnings if key(w) not in prev_keys]
         removed_warnings = [w for w in prev_data if key(w) not in cur_keys]
+
+        # 예비특보가 같은 종류의 주의보·경보로 바뀐 경우는 '예비특보 해제'로 알리지 않음
+        def _wrn(level):
+            for suffix in ("예비특보", "주의보", "경보"):
+                if level.endswith(suffix):
+                    return level[: -len(suffix)]
+            return level
+        upgraded = {(w.get("regId"), _wrn(w.get("level", ""))) for w in warnings if not w.get("pre")}
+        removed_warnings = [w for w in removed_warnings
+                            if not (w.get("pre") and (w.get("regId"), _wrn(w.get("level", ""))) in upgraded)]
         if not new_warnings and not removed_warnings:
             return {"changed": True, "reason": "내용변경", "sent": 0}
 
