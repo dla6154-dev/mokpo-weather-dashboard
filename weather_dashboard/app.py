@@ -1067,27 +1067,21 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
         def _zone(w):
             return PUSH_ZONES.get(w.get("regId"), w.get("regId"))
 
-        lines_out = []
+        # 특보 1건마다 알림 1개 (tag를 건별로 달리해야 폰에서 서로 덮어쓰지 않음)
+        messages = []
         for w in new_warnings:
             when = _when(w)
-            lines_out.append(f"{w['level']} {_zone(w)}" + (f" ({when})" if when else ""))
+            messages.append((f"[진도 운항관리] {w['level']} 발표", _zone(w) + (f"\n{when}" if when else ""), f"on-{w['regId']}-{w['level']}"))
         for w in removed_warnings:
-            lines_out.append(f"{w['level']} 해제 {_zone(w)}")
-
-        if len(new_warnings) == 1 and not removed_warnings:
-            title = f"[진도 운항관리] {new_warnings[0]['level']} 발표"
-        elif len(removed_warnings) == 1 and not new_warnings:
-            title = f"[진도 운항관리] {removed_warnings[0]['level']} 해제"
-        else:
-            title = f"[진도 운항관리] 특보 변경 {len(lines_out)}건"
-        body = "\n".join(lines_out)
+            messages.append((f"[진도 운항관리] {w['level']} 해제", _zone(w), f"off-{w['regId']}-{w['level']}"))
 
         subs = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
         sent = 0
-        for s in subs:
-            ok = await asyncio.to_thread(_send_push, {"endpoint": s["endpoint"], "keys": {"p256dh": s["p256dh"], "auth": s["auth"]}}, title, body, "warning-change")
-            if ok:
-                sent += 1
+        for title, body, tag in messages:
+            for s in subs:
+                ok = await asyncio.to_thread(_send_push, {"endpoint": s["endpoint"], "keys": {"p256dh": s["p256dh"], "auth": s["auth"]}}, title, body, tag)
+                if ok:
+                    sent += 1
 
         return {"changed": True, "new": len(new_warnings), "removed": len(removed_warnings), "sent": sent}
 
