@@ -950,7 +950,7 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             )
         if r.status_code >= 300 or not any(x.get("id") == sc["id"] for x in (r.json() or [])):
             return {"scenario": "skipped"}
-        title = "[진도 운항관리] 기상청 풍랑특보 시나리오 등록"
+        title = "[진도 운항관리] 새로운 기상청 시나리오가 업로드되었습니다"
         body = f"{sc.get('office') or '기상청'} {sc.get('issued_at', '')} 발표\n앱 날씨 화면 > 기상청 시나리오에서 확인하세요."
         subs = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
         sent = 0
