@@ -1,6 +1,17 @@
 const initialSnapshot = window.__INITIAL_QUERY1_SNAPSHOT__ || {};
 const refreshSeconds = window.__CLIENT_REFRESH_SECONDS__ || 30;
 const previewTm = String(window.__QUERY1_TM__ || "").trim();
+const QUERY1_COLUMN_STORAGE_KEY = "query1ColumnSizes";
+const QUERY1_COLUMN_DEFAULTS = {
+  hhmm: 13,
+  observationType: 13,
+  stationName: 13,
+  windDirection: 13,
+  windSpeed: 13,
+  gust: 13,
+  waveHeight: 13,
+  waveHeightMax: 13,
+};
 let defaultSelectionState = Array.isArray(window.__QUERY1_DEFAULT_SELECTION__)
   ? [...window.__QUERY1_DEFAULT_SELECTION__]
   : [];
@@ -21,10 +32,71 @@ const moveUpButton = document.getElementById("move-up");
 const moveDownButton = document.getElementById("move-down");
 const saveSelectionButton = document.getElementById("save-selection");
 const saveStatusEl = document.getElementById("save-status");
+const tableEl = document.querySelector(".example-data-table");
 
 let latestSnapshot = initialSnapshot;
 let selectionState = null;
 let searchTerm = "";
+let columnSizeState = loadInitialColumnSizes();
+
+function normalizeColumnSize(value, fallback) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(10, Math.min(32, Math.round(parsed)));
+}
+
+function normalizeColumnSizeMap(raw) {
+  const next = {};
+  for (const [key, fallback] of Object.entries(QUERY1_COLUMN_DEFAULTS)) {
+    next[key] = normalizeColumnSize(raw?.[key], fallback);
+  }
+  return next;
+}
+
+function derivedPaddingY(size) {
+  return Math.max(2, Math.round((30 - size) / 2));
+}
+
+function derivedPaddingX(size) {
+  return Math.max(4, Math.round(12 - (size - 13) * 0.5));
+}
+
+function loadStoredColumnSizes() {
+  try {
+    const raw = window.localStorage.getItem(QUERY1_COLUMN_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function loadInitialColumnSizes() {
+  const serverSizes = normalizeColumnSizeMap(window.__QUERY1_COLUMN_SIZES__ || {});
+  const storedSizes = loadStoredColumnSizes();
+  if (Object.values(serverSizes).some((value) => Number.isFinite(value))) {
+    return serverSizes;
+  }
+  if (!storedSizes) return serverSizes;
+  return normalizeColumnSizeMap(storedSizes);
+}
+
+function persistColumnSizesLocally(columnSizes) {
+  try {
+    window.localStorage.setItem(QUERY1_COLUMN_STORAGE_KEY, JSON.stringify(columnSizes));
+  } catch {
+    // Ignore localStorage failures.
+  }
+}
+
+function applyColumnSizes() {
+  if (!tableEl) return;
+  for (const [key, size] of Object.entries(columnSizeState)) {
+    tableEl.style.setProperty(`--q1-font-${key}`, `${size}px`);
+    tableEl.style.setProperty(`--q1-pad-y-${key}`, `${derivedPaddingY(size)}px`);
+    tableEl.style.setProperty(`--q1-pad-x-${key}`, `${derivedPaddingX(size)}px`);
+  }
+}
 
 function formatTimestamp(value) {
   if (!value) return "-";
@@ -116,9 +188,7 @@ function uniqueOrderedKeys(keys, available) {
   const next = [];
   const seen = new Set();
   for (const key of keys) {
-    if (!available.has(key) || seen.has(key)) {
-      continue;
-    }
+    if (!available.has(key) || seen.has(key)) continue;
     seen.add(key);
     next.push(key);
   }
@@ -193,7 +263,7 @@ function renderRows(rows) {
   if (!rows.length) {
     bodyEl.innerHTML = `
       <tr>
-        <td colspan="9" class="sheet-empty">선택한 관측소 데이터가 없습니다.</td>
+        <td colspan="8" class="sheet-empty">선택한 관측소 데이터가 없습니다.</td>
       </tr>
     `;
     return;
@@ -208,15 +278,14 @@ function renderRows(rows) {
       const severity = rowSeverity(row);
       return `
         <tr class="${severity ? `query1-row-${severity}` : ""}">
-          <td>${escapeHtml(row.hhmm)}</td>
-          <td>${escapeHtml(row.observationType)}</td>
-          <td class="sheet-name">${escapeHtml(row.stationName)}</td>
-          <td>${escapeHtml(row.windDirection)}</td>
-          <td class="${valueClass(windSpeedSeverity)}">${escapeHtml(row.windSpeed)}</td>
-          <td class="${valueClass(gustSeverity)}">${escapeHtml(row.gust)}</td>
-          <td class="${valueClass(waveHeightSeverity)}">${escapeHtml(row.waveHeight)}</td>
-          <td class="${valueClass(waveHeightMaxSeverity)}">${escapeHtml(row.waveHeightMax)}</td>
-          <td>${escapeHtml(row.visibility)}</td>
+          <td class="q1-col q1-col-hhmm">${escapeHtml(row.hhmm)}</td>
+          <td class="q1-col q1-col-observationType">${escapeHtml(row.observationType)}</td>
+          <td class="sheet-name q1-col q1-col-stationName">${escapeHtml(row.stationName)}</td>
+          <td class="q1-col q1-col-windDirection">${escapeHtml(row.windDirection)}</td>
+          <td class="q1-col q1-col-windSpeed ${valueClass(windSpeedSeverity)}">${escapeHtml(row.windSpeed)}</td>
+          <td class="q1-col q1-col-gust ${valueClass(gustSeverity)}">${escapeHtml(row.gust)}</td>
+          <td class="q1-col q1-col-waveHeight ${valueClass(waveHeightSeverity)}">${escapeHtml(row.waveHeight)}</td>
+          <td class="q1-col q1-col-waveHeightMax ${valueClass(waveHeightMaxSeverity)}">${escapeHtml(row.waveHeightMax)}</td>
         </tr>
       `;
     })
@@ -255,6 +324,7 @@ function renderSnapshot(snapshot) {
 
   renderRows(visibleRows);
   renderSelection(rows);
+  applyColumnSizes();
 }
 
 function rerenderFromState() {
@@ -318,9 +388,7 @@ async function saveCurrentSelection() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ selectedKeys }),
     });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const payload = await response.json();
     defaultSelectionState = Array.isArray(payload.selectedKeys) ? [...payload.selectedKeys] : [];
     setSaveStatus("기본값으로 저장됨");
@@ -338,9 +406,7 @@ async function refreshSnapshot() {
       ? `/api/query1/snapshot?tm=${encodeURIComponent(previewTm)}`
       : "/api/query1/snapshot";
     const response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const snapshot = await response.json();
     renderSnapshot(snapshot);
   } catch (error) {
@@ -352,46 +418,53 @@ async function refreshSnapshot() {
   }
 }
 
-stationSearchEl.addEventListener("input", (event) => {
+stationSearchEl?.addEventListener("input", (event) => {
   searchTerm = String(event.target.value || "").trim().toLowerCase();
   renderSelection(latestSnapshot.rows || []);
 });
 
-addSelectedButton.addEventListener("click", () => {
+addSelectedButton?.addEventListener("click", () => {
   addKeys(selectedOptionValues(availableStationsEl));
 });
 
-addAllButton.addEventListener("click", () => {
+addAllButton?.addEventListener("click", () => {
   addKeys(availableOptions(latestSnapshot.rows || []).map((item) => item.key));
 });
 
-removeSelectedButton.addEventListener("click", () => {
+removeSelectedButton?.addEventListener("click", () => {
   removeKeys(selectedOptionValues(selectedStationsEl));
 });
 
-removeAllButton.addEventListener("click", () => {
+removeAllButton?.addEventListener("click", () => {
   selectionState = [];
   setSaveStatus("");
   rerenderFromState();
 });
 
-moveUpButton.addEventListener("click", () => {
+moveUpButton?.addEventListener("click", () => {
   moveSelectionUp(selectedOptionValues(selectedStationsEl));
 });
 
-moveDownButton.addEventListener("click", () => {
+moveDownButton?.addEventListener("click", () => {
   moveSelectionDown(selectedOptionValues(selectedStationsEl));
 });
 
-availableStationsEl.addEventListener("dblclick", () => {
+availableStationsEl?.addEventListener("dblclick", () => {
   addKeys(selectedOptionValues(availableStationsEl));
 });
 
-selectedStationsEl.addEventListener("dblclick", () => {
+selectedStationsEl?.addEventListener("dblclick", () => {
   removeKeys(selectedOptionValues(selectedStationsEl));
 });
 
-saveSelectionButton.addEventListener("click", saveCurrentSelection);
+saveSelectionButton?.addEventListener("click", saveCurrentSelection);
 
+window.addEventListener("storage", (event) => {
+  if (event.key !== QUERY1_COLUMN_STORAGE_KEY) return;
+  columnSizeState = normalizeColumnSizeMap(loadStoredColumnSizes() || {});
+  applyColumnSizes();
+});
+
+persistColumnSizesLocally(columnSizeState);
 renderSnapshot(initialSnapshot);
 setInterval(refreshSnapshot, refreshSeconds * 1000);

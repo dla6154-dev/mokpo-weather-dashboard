@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>기상정보 실시간 화면</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260507k">
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260514b">
   </head>
   <body class="{% if embed %}embed-body{% endif %}">
     <main class="page-shell{% if embed %} embed-shell{% endif %}">
@@ -21,7 +21,7 @@
           <div>
             <p class="eyebrow">목포 기상상황부(20251231업데이트)</p>
             <h1>기상정보 실시간 화면</h1>
-            <p class="subtitle">선택한 관측소의 바람, 파고, 시정을 한 표에서 바로 확인합니다.</p>
+            <p class="subtitle">선택한 관측소의 바람과 파고를 실시간으로 확인합니다.</p>
           </div>
           <div class="meta-panel">
             <div class="meta-item">
@@ -53,15 +53,14 @@
             <table class="sheet-table compact example-data-table">
               <thead>
                 <tr>
-                  <th>시간</th>
-                  <th>구분</th>
-                  <th>관측소</th>
-                  <th>풍향</th>
-                  <th>풍속</th>
-                  <th>돌풍</th>
-                  <th>유의파고</th>
-                  <th>최대파고</th>
-                  <th>시정</th>
+                  <th class="q1-col q1-col-hhmm">시간</th>
+                  <th class="q1-col q1-col-observationType">구분</th>
+                  <th class="q1-col q1-col-stationName">관측소</th>
+                  <th class="q1-col q1-col-windDirection">풍향</th>
+                  <th class="q1-col q1-col-windSpeed">풍속</th>
+                  <th class="q1-col q1-col-gust">돌풍</th>
+                  <th class="q1-col q1-col-waveHeight">유의파고</th>
+                  <th class="q1-col q1-col-waveHeightMax">최대파고</th>
                 </tr>
               </thead>
               <tbody id="query1-body"></tbody>
@@ -82,6 +81,14 @@
               <button id="save-selection" type="button" class="selection-button save">현재 선택 저장</button>
               <span id="save-status" class="panel-meta"></span>
             </div>
+            <button
+              id="open-column-settings"
+              type="button"
+              class="settings-open-btn selection-font-btn"
+              onclick="window.open('/query1-columns', '_blank', 'width=1240,height=920')"
+            >
+              글자 크기 설정
+            </button>
           </div>
           <div class="dual-list">
             <section class="dual-list-column">
@@ -111,8 +118,9 @@
       window.__INITIAL_QUERY1_SNAPSHOT__ = {{ snapshot_json | safe }};
       window.__CLIENT_REFRESH_SECONDS__ = {{ client_refresh_seconds }};
       window.__QUERY1_DEFAULT_SELECTION__ = {{ default_selection_json | safe }};
+      window.__QUERY1_COLUMN_SIZES__ = {{ column_sizes_json | safe }};
       window.__QUERY1_TM__ = {{ preview_tm | tojson }};
     </script>
-    <script src="/static/query1.js?v=20260507k"></script>
+    <script src="/static/query1.js?v=20260514b"></script>
   </body>
 </html>

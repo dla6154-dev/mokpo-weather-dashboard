@@ -246,7 +246,7 @@ table.xl td[contenteditable="true"]:focus{outline:2px solid #2b7bd6;outline-offs
 #board td[data-c="C8"],#board td[data-c="C14"],#board td[data-c="C18"]{font-weight:700}
 #board td[data-c="C26"],#board td[data-c="C28"]{font-weight:700;color:#1b2f45}
 #cap-board{outline:none}
-#cap-board2{box-sizing:border-box;width:1684px;padding:0;font-family:'맑은 고딕','Malgun Gothic',Arial,sans-serif;color:#183958;border:2px solid #245783;font-synthesis:none}
+#cap-board2{box-sizing:border-box;width:1800px;padding:0;font-family:'맑은 고딕','Malgun Gothic',Arial,sans-serif;color:#183958;border:2px solid #245783;font-synthesis:none}
 button.data-item{display:inline;min-height:0;padding:0 14px;gap:0;white-space:nowrap}
 .app .route-btn{min-height:0;padding:5px 10px;gap:6px;font-size:12px;font-weight:700;border-radius:14px;color:#1d4fa0;background:#eef4ff;border-color:#c9d9f3}
 .app .route-btn b{min-width:18px;padding:0 5px;border-radius:9px;background:#1d5fc4;color:#fff;font-size:11px;text-align:center}
@@ -349,7 +349,7 @@ button.data-item{display:inline;min-height:0;padding:0 14px;gap:0;white-space:no
 #cap-board2 .b2-head>small{position:absolute;left:7px;top:5px;font-size:12px}
 #cap-board2 .b2-head h1{font-size:30px;letter-spacing:2px;margin:0 0 10px;color:#204f7d}
 #cap-board2 .b2-head p{font-size:21px;margin:0}
-#cap-board2 .b2-approval{position:absolute;right:12px;top:17px;width:350px;font-size:13px}
+#cap-board2 .b2-approval{position:absolute;right:12px;top:17px;width:360px;font-size:13px}
 #cap-board2 .b2-head .b2-approval th,#cap-board2 .b2-head .b2-approval td{border:1px solid #a4bed7}
 #cap-board2 .b2-approval th{width:32px;font-weight:400}
 #cap-board2 .b2-approval tr:first-child{height:24px}
@@ -405,6 +405,36 @@ body.editing #cap-board2 #b2-mokpo-vis[contenteditable="true"]{box-shadow:inset 
 #cap-board2 .b2-section+.b2-section{border-top:2px solid #245783}
 #cap-board2 .b2-prose{font-size:15px;line-height:1.65;white-space:pre-line;padding:14px 13px;min-height:112px}
 #cap-board2 .b2-notices{font-size:14px;line-height:1.55;min-height:130px}
+/* Original-form layout: forecast and warning share the existing main heading. */
+#cap-board2 .b2-original-layout{grid-template-columns:70% 30%}
+#cap-board2 .b2-panel{display:flex;flex-direction:column}
+#cap-board2 .b2-panel h2{height:48px;flex:none;font-size:23px}
+#cap-board2 .b2-panel>table{height:auto}
+#cap-board2 #b2-obs{flex:1}
+#cap-board2 .b2-original-layout thead{height:62px}
+#cap-board2 .b2-original-layout thead tr{height:31px}
+#cap-board2 #b2-combined thead th{font-size:13px}
+#cap-board2 #b2-combined .sea-name{font-size:15px;line-height:1.6;background:#dcebf7}
+#cap-board2 #b2-combined .period{background:#e6f0f8;font-size:14px}
+#cap-board2 #b2-combined .forecast-value{font-size:14px;font-variant-numeric:tabular-nums}
+#cap-board2 #b2-combined .forecast-weather{font-size:14px;line-height:1.5}
+#cap-board2 #b2-combined td,#cap-board2 #b2-combined th{padding:3px 4px}
+#cap-board2 #b2-combined .warning-region{background:#e7f0f8;font-size:14px;border-left:2px solid #87a8c7}
+#cap-board2 #b2-combined .zone{font-size:13px;background:#f4f8fc}
+#cap-board2 #b2-combined .zone small{font-size:12px}
+#cap-board2 #b2-combined .warning-head{border-left:2px solid #87a8c7}
+#cap-board2 #b2-combined .time{font-size:13px;font-variant-numeric:tabular-nums;line-height:1.45}
+#cap-board2 #b2-combined .end-time{font-size:12px}
+#cap-board2 #b2-combined .sea-start>td,#cap-board2 #b2-combined .sea-start>th{border-top:1.5px solid #6f96ba}
+#cap-board2 #b2-combined .badge{border-radius:0;background:transparent;padding:0;font-size:13px;line-height:1.4;font-weight:500}
+#cap-board2 #b2-combined .warning-item[data-level="주의"],#cap-board2 #b2-combined .badge.advisory{color:#4524e8}
+#cap-board2 #b2-combined .warning-item[data-level="경보"],#cap-board2 #b2-combined .badge.severe{color:#ff0000}
+#cap-board2 #b2-combined .badge.preliminary{color:#183958}
+#cap-board2 #b2-combined .badge.none{color:#8291a1}
+#cap-board2 #b2-obs tbody tr{height:auto}
+#cap-board2 #b2-obs tbody td,#cap-board2 #b2-obs tbody td:first-child{font-size:14px}
+#cap-board2 #b2-obs thead tr{height:31px}
+
 #tide td.tides0{font-family:'맑은 고딕','Malgun Gothic','Noto Sans KR',sans-serif;font-size:16pt;font-weight:bold;text-align:center;vertical-align:middle;white-space:pre;border-top:3px double #000000;border-right:1px solid #000000;border-left:3px double #000000}
 #tide td.tides1{font-family:'맑은 고딕','Malgun Gothic','Noto Sans KR',sans-serif;font-size:11pt;font-weight:bold;text-align:center;vertical-align:middle;white-space:pre;border-right:1px solid #000000;border-left:3px double #000000}
 #tide td.tides2{font-family:'맑은 고딕','Malgun Gothic','Noto Sans KR',sans-serif;font-size:12pt;text-align:center;vertical-align:middle;white-space:pre;background:#C6D9F1;border-top:2px solid #000000;border-right:1px solid #000000;border-bottom:1px solid #000000;border-left:3px double #000000}
@@ -513,11 +543,13 @@ body.editing #cap-board2 #b2-mokpo-vis[contenteditable="true"]{box-shadow:inset 
 ○ 특이사항 발생 시 목포운항관리센터(061-247-9466)로 신속히 연락바랍니다.</td></tr></tbody></table></div></div>
 <div class="view" id="view-board2" hidden><div class="sheet" id="cap-board2">
 <header class="b2-head"><small>[별지 제3호 서식] &lt;개정 20·12·10&gt;</small><h1>해상기상정보 및 운항상황부</h1><p id="b2-date"></p><table class="b2-approval"><tr><th rowspan="2">결<br>재</th><td>담당자</td><td>센터장</td></tr><tr><td></td><td></td></tr></table></header>
-<div class="b2-panels">
-<section class="b2-panel"><h2>오전·오후 해상예보</h2><p class="b2-source" id="b2-forecast-source"></p><table id="b2-forecast"><colgroup><col style="width:25%"><col style="width:10%"><col style="width:12%"><col style="width:14%"><col style="width:14%"><col style="width:25%"></colgroup><thead><tr><th>해역</th><th>시간대</th><th>풍향</th><th>풍속<br><small>(m/s)</small></th><th>파고<br><small>(m)</small></th><th>날씨</th></tr></thead><tbody></tbody></table></section>
-<section class="b2-panel"><h2>구역별 기상특보</h2><p class="b2-source" id="b2-warning-source"></p><table id="b2-warning"><colgroup><col style="width:24%"><col style="width:15%"><col style="width:19%"><col style="width:13%"><col style="width:13%"><col style="width:16%"></colgroup><thead><tr><th>해역</th><th>세부구역</th><th>특보</th><th>발표시각</th><th>발효시각</th><th>해제예고</th></tr></thead><tbody></tbody></table></section>
-<section class="b2-panel"><h2>기상정보 수집현황</h2><p class="b2-source" id="b2-obs-source"></p><table id="b2-obs"><colgroup><col style="width:21%"><col style="width:10%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:12%"><col style="width:12%"><col style="width:12%"></colgroup><thead><tr><th rowspan="2">수집처</th><th rowspan="2">시각</th><th rowspan="2">풍향</th><th colspan="2">풍속(m/s)</th><th colspan="2">파고(m)</th><th rowspan="2">시정<br><small>(km)</small></th></tr><tr><th>풍속</th><th>gust</th><th>유의</th><th>최대</th></tr></thead><tbody></tbody></table></section>
+<div class="b2-panels b2-original-layout">
+<section class="b2-panel b2-combined-panel"><h2>해 역 별 기 상(기 상 청) 예 보 현 황</h2>
+<table id="b2-combined"><colgroup><col style="width:13%"><col style="width:5%"><col style="width:6%"><col style="width:7%"><col style="width:7%"><col style="width:12%"><col style="width:6%"><col style="width:8%"><col style="width:10%"><col style="width:8%"><col style="width:8%"><col style="width:10%"></colgroup>
+<thead><tr><th colspan="2" rowspan="2">해역/항로별</th><th rowspan="2">풍향</th><th rowspan="2">풍속<br><small>(m/sec)</small></th><th rowspan="2">파고<br><small>(m)</small></th><th rowspan="2">천기</th><th colspan="6" class="warning-head">기 상 특 보</th></tr><tr><th colspan="3">종류</th><th>발표시간</th><th>발효시간</th><th>해제시간</th></tr></thead><tbody></tbody></table></section>
+<section class="b2-panel b2-observation"><h2>기 상 정 보 수 집 현 황</h2><table id="b2-obs"><colgroup><col style="width:21%"><col style="width:10%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:12%"><col style="width:12%"><col style="width:12%"></colgroup><thead><tr><th rowspan="2">수집처</th><th rowspan="2">시각</th><th rowspan="2">풍향</th><th colspan="2">풍속(m/sec)</th><th colspan="2">파고(m)</th><th rowspan="2">시정<br><small>(km)</small></th></tr><tr><th>풍속</th><th>gust</th><th>유의</th><th>최대</th></tr></thead><tbody></tbody></table></section>
 </div>
+<div style="display:none"><span id="b2-forecast-source"></span><span id="b2-warning-source"></span><span id="b2-obs-source"></span></div>
 <section class="b2-section"><h3>* 기상정보 분석 종합 <small id="b2-comment-source"></small></h3><div id="b2-comment" class="b2-prose">조회 중…</div></section>
 <section class="b2-section"><h3>* 조치 및 당부사항 / 운항정보(항로별 특이사항)</h3><div class="b2-prose b2-notices" id="b2-notices">○ 여객선 승선절차(신분증 확인, 동승자 하차 후 차량 선적, 과승 확인 등) 규정 등 관련 규정 철저히 준수 바랍니다.
 ○ 차량적재도에 따른 차량 적재 및 고박 철저 바랍니다.
@@ -1065,9 +1097,9 @@ const fillBoard2 = (()=>{
       const lv = w.lvl==='주의' ? '주의보' : w.lvl==='예비' ? '예비특보' : w.lvl;
       const cl = w.lvl==='경보' ? 'severe' : w.lvl==='예비' ? 'preliminary' : 'advisory';
       const future = w.lvl!=='예비' && w.tmEf > nowDigits ? '<span class="upcoming">발효 예정</span>' : '';
-      return `<div class="warning-item"><span class="badge ${cl}">${esc(w.wrn)}<br>${esc(lv)}</span>${future}</div>`;
+      return `<div class="warning-item" data-level="${esc(w.lvl)}"><span class="badge ${cl}">${esc(w.wrn)}<br>${esc(lv)}</span>${future}</div>`;
     }).join('');
-    const times = field => rows.map(w=>`<div class="warning-item">${field==='edTm' ? endTime(w.edTm) : field==='tmEf' && w.lvl==='예비' ? expected(w.tmEf) : stampCell(w[field])}</div>`).join('');
+    const times = field => rows.map(w=>`<div class="warning-item" data-level="${esc(w.lvl)}">${field==='edTm' ? endTime(w.edTm) : field==='tmEf' && w.lvl==='예비' ? expected(w.tmEf) : stampCell(w[field])}</div>`).join('');
     return `<td>${status}</td><td class="time">${times('tmFc')}</td><td class="time">${times('tmEf')}</td><td class="end-time">${times('edTm')}</td>`;
   }
   const levelText = w => w.lvl==='주의' ? '주의보' : w.lvl==='예비' ? '예비특보' : w.lvl;
@@ -1285,21 +1317,52 @@ const fillBoard2 = (()=>{
     applyConfig(validConfig(D['route-config']) || DEFAULT_CONFIG);
     fillMain(D);
   }
+  const combinedGroups=[
+ {fc:0,zoneIndexes:[0,1,2],height:252},
+ {fc:1,zoneIndexes:[3],height:80},
+ {fc:2,zoneIndexes:[4],height:88},
+ {fc:3,zoneIndexes:[5],height:88},
+ {fc:4,zoneIndexes:[6],height:88}
+];
+
   return fill;
+function renderCombined(fc,wr,wrOk,nowDigits,today){
+ const names=['북부','중부','남부','북쪽','남쪽','앞바다','서쪽'];
+ let html='';
+ for(const group of combinedGroups){
+   const [fcName,fcLabel]=FORECASTS[group.fc];
+   const flat=group.zoneIndexes.flatMap(z=>ZONES[z][1].map(([id,label],i)=>({id,label,z,first:i===0,count:ZONES[z][1].length})));
+   // Common row lattice: 7 coastal warning zones alongside two merged AM/PM forecasts.
+   const n=flat.length, total=n%2===0?n:2*n, forecastSpan=total/2, warningSpan=total/n;
+   for(let r=0;r<total;r++){
+     const major=r===0?'sea-start':'';
+     html+=`<tr class="${major}" data-sea="${group.fc}" style="height:${group.height/total}px">`;
+     if(r===0)html+=`<th class="sea-name" rowspan="${total}" scope="rowgroup">${fcLabel}</th>`;
+     if(r%forecastSpan===0){
+       const ap=r===0?'오전':'오후'; const candidate=fc?.rows?.[fcName+'/'+ap];
+       const x=candidate?.tmEf?.startsWith(today)?candidate:null;
+       const span=` rowspan="${forecastSpan}"`;
+       html+=`<td${span} class="period" data-slot="${esc(fcName+'/'+ap)}">${ap}</td><td${span} class="forecast-value">${pair(x?.w1,x?.w2)}</td><td${span} class="forecast-value">${pair(x?.s1,x?.s2)}</td><td${span} class="forecast-value">${pair(x?.wh1,x?.wh2)}</td><td${span} class="forecast-weather ${x?'':'missing'}">${x?esc(x.wf):'오늘 자료 없음'}</td>`;
+     }
+     if(r%warningSpan===0){
+       const row=flat[r/warningSpan];
+       if(row.first)html+=`<th class="warning-region" rowspan="${row.count*warningSpan}" scope="rowgroup">${names[row.z]}</th>`;
+       html+=`<td class="zone" rowspan="${warningSpan}" data-region="${row.id}" title="${row.id}">${row.label}</td>`;
+       html+=warningCells(wrOk ? activeRows(wr.rows,row.id) : [],wrOk,nowDigits).replaceAll('<td',`<td rowspan="${warningSpan}"`);
+     }
+     html+='</tr>';
+   }
+ }
+ $('b2-combined').tBodies[0].innerHTML=html;
+}
+
   function fillMain(D){
     try{
       const now = new Date(), nowDigits = kst(now).replace(/\D/g,'').slice(0,12), today = nowDigits.slice(0,8);
       const fc = D['wb-sea-forecast'], wr = D['wb-warning'], buoy = D['kma-buoy-snapshot']||{}, nm = D['wb-nmpnt']||{}, comment = D['wb-weather-comment']||{};
       $('b2-date').textContent = longDate(kstNow());
-      $('b2-forecast').tBodies[0].innerHTML = FORECASTS.map(([name,label])=>['오전','오후'].map((ap,i)=>{
-        const row = fc?.rows?.[name+'/'+ap]; const r = row?.tmEf?.startsWith(today) ? row : null;
-        return `<tr class="${i===0?'group-start':''}">${i===0?`<th rowspan="2" scope="rowgroup">${label}</th>`:''}<td class="${i?'afternoon':'morning'}">${ap}</td><td>${pair(r?.w1,r?.w2)}</td><td>${pair(r?.s1,r?.s2)}</td><td>${pair(r?.wh1,r?.wh2)}</td><td class="${r?'':'missing'}">${r?esc(r.wf):'오늘 자료 없음'}</td></tr>`;
-      }).join('')).join('');
-      const fcTimes = [...new Set(Object.values(fc?.rows||{}).filter(x=>x.tmEf?.startsWith(today)).map(x=>x.tmFc))].sort();
-      $('b2-forecast-source').textContent = `수집 ${short(FETCHED['wb-sea-forecast'])} · 예보 발표 ${fcTimes.length ? fcTimes.at(-1).slice(8,10)+':'+fcTimes.at(-1).slice(10,12) : '확인 불가'}`;
       const wrOk = !!(wr && Array.isArray(wr.rows));
-      $('b2-warning').tBodies[0].innerHTML = ZONES.map(([name,list])=>list.map(([id,label],i)=>`<tr data-region="${id}" class="${i===0?'group-start':''}">${i===0?`<th rowspan="${list.length}" scope="rowgroup">${name}</th>`:''}<td class="zone" title="${id}">${label}</td>${warningCells(wrOk ? activeRows(wr.rows,id) : [], wrOk, nowDigits)}</tr>`).join('')).join('');
-      $('b2-warning-source').textContent = `수집 ${short(FETCHED['wb-warning'])} · 발표 기준 · 14개 구역`;
+      renderCombined(fc,wr,wrOk,nowDigits,today);
       renderRoutes(wr, wrOk, nowDigits, D['ferry-schedule']);
       const obs = new Map((buoy.rows||[]).map(x=>[String(x.stationId),x]));
       $('b2-obs').tBodies[0].innerHTML = STATIONS.map(([id,name])=>{
