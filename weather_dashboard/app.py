@@ -4,7 +4,10 @@ import asyncio
 from collections import Counter
 import json
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+KST = timezone(timedelta(hours=9))
+WRN_SERVICE_KEY = "4063f2c2047eaf451ca47bba11369c953e228d145a62d2be87ad7af1d0f3960f"  # 공공데이터포털 기상특보 조회서비스
 from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, HTTPException, Request
@@ -967,6 +970,28 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
         except Exception as e:
             return {"ok": False, "error": str(e)}
 
+    async def _release_time_text(reg_id):
+        """기상청 특보코드조회(getPwnCd)에서 해당 해역의 최근 해제 통보 → '2일 04:00 발표 · 06:00 해제'"""
+        import httpx
+        now = datetime.now(KST)
+        params = {"serviceKey": WRN_SERVICE_KEY, "pageNo": "1", "numOfRows": "20", "dataType": "JSON",
+                  "fromTmFc": (now - timedelta(days=1)).strftime("%Y%m%d"), "toTmFc": now.strftime("%Y%m%d"), "areaCode": reg_id}
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                r = await client.get("https://apis.data.go.kr/1360000/WthrWrnInfoService/getPwnCd", params=params)
+            body = r.json()["response"].get("body") or {}
+            items = (body.get("items") or {}).get("item") or []
+        except Exception as e:
+            print(f"[push] getPwnCd 실패 {reg_id}: {e}")
+            return ""
+        rel = [i for i in items if str(i.get("command")) == "2" and str(i.get("cancel")) == "0" and i.get("endTime")]
+        if not rel:
+            return ""
+        i = max(rel, key=lambda x: int(x["tmFc"]))
+        fc, ed = str(i["tmFc"]), str(i["endTime"])
+        day = "" if fc[6:8] == ed[6:8] else f"{int(ed[6:8])}일 "
+        return f"{int(fc[6:8])}일 {fc[8:10]}:{fc[10:12]} 발표 · {day}{ed[8:10]}:{ed[10:12]} 해제"
+
     @app.get("/api/push/check-warnings")
     async def push_check_warnings():
         """Render Cron Job이 5분마다 호출 → 특보 변경 감지 후 푸시 발송"""
@@ -1073,7 +1098,8 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             when = _when(w)
             messages.append((f"[진도 운항관리] {w['level']} 발표", _zone(w) + (f"\n{when}" if when else ""), f"on-{w['regId']}-{w['level']}"))
         for w in removed_warnings:
-            messages.append((f"[진도 운항관리] {w['level']} 해제", _zone(w), f"off-{w['regId']}-{w['level']}"))
+            when = "" if w.get("pre") else await _release_time_text(w.get("regId"))
+            messages.append((f"[진도 운항관리] {w['level']} 해제", _zone(w) + (f"\n{when}" if when else ""), f"off-{w['regId']}-{w['level']}"))
 
         subs = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
         sent = 0
