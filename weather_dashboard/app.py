@@ -992,6 +992,94 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
         day = "" if fc[6:8] == ed[6:8] else f"{int(ed[6:8])}일 "
         return f"{int(fc[6:8])}일 {fc[8:10]}:{fc[10:12]} 발표 · {day}{ed[8:10]}:{ed[10:12]} 해제"
 
+    async def _update_wrn_zones():
+        """통보문에서 평수구역 제외/해제를 읽어 wrn_zone_status 갱신, 새 제외·해제는 푸시"""
+        import httpx, json as _json
+        from .wrn_notice import NOTICE_STNS, ZONE_NAME, SUB_PARENT, parse_notice, build_status
+        PUSH_SUBS = {"S2210500", "S2211400", "S2211200"}
+        now = datetime.now(KST)
+        yday, today = (now - timedelta(days=1)).strftime("%Y%m%d"), now.strftime("%Y%m%d")
+        now_digits = now.strftime("%Y%m%d%H%M")
+
+        seen_rows = await _sb_get(f"kma_wrn_notice?select=stn_id,tm_fc,tm_seq&tm_fc=gte.{yday}0000")
+        seen = {(r["stn_id"], r["tm_fc"], r["tm_seq"]) for r in seen_rows} if isinstance(seen_rows, list) else set()
+        any_row = await _sb_get("kma_wrn_notice?select=tm_fc&limit=1")
+        first_run = not (isinstance(any_row, list) and any_row)
+        new_events = []
+        async with httpx.AsyncClient(timeout=15) as client:
+            for stn in NOTICE_STNS:
+                try:
+                    r = await client.get("https://apis.data.go.kr/1360000/WthrWrnInfoService/getWthrWrnMsg", params={
+                        "serviceKey": WRN_SERVICE_KEY, "pageNo": "1", "numOfRows": "100", "dataType": "JSON",
+                        "stnId": str(stn), "fromTmFc": yday, "toTmFc": today})
+                    body = r.json()["response"].get("body") or {}
+                    items = (body.get("items") or {}).get("item") or []
+                except Exception as e:
+                    print(f"[통보문] {stn} 조회 실패: {e}")
+                    continue
+                for it in items:
+                    key = (stn, str(it.get("tmFc")), int(it.get("tmSeq") or 0))
+                    if key in seen:
+                        continue
+                    events, unparsed = parse_notice(it)
+                    await _sb_post("kma_wrn_notice", {
+                        "stn_id": stn, "tm_fc": key[1], "tm_seq": key[2], "title": it.get("t1"),
+                        "t1": it.get("t1"), "t2": it.get("t2"), "t3": it.get("t3"), "other": it.get("other"),
+                        "raw": it, "events": events, "unparsed": unparsed or None})
+                    if unparsed:
+                        print(f"[통보문] 읽지 못한 평수구역 표기 {key}: {unparsed}")
+                    new_events += events
+
+        # 최근 7일 통보문 기록 + 현재 특보(wrn_now_data)로 구역 상태 계산
+        since = (now - timedelta(days=7)).strftime("%Y%m%d0000")
+        notices = await _sb_get(f"kma_wrn_notice?select=events&tm_fc=gte.{since}&order=tm_fc.asc,tm_seq.asc")
+        events = [e for n in (notices if isinstance(notices, list) else []) for e in (n.get("events") or [])]
+        cache = await _sb_get("external_api_cache?id=eq.wb-warning&select=payload")
+        rows = ((cache[0].get("payload") or {}).get("rows") if isinstance(cache, list) and cache else None) or []
+        latest = {}
+        for r in rows:
+            k = (r.get("regId"), r.get("wrn", ""), r.get("lvl") == "예비")
+            if k not in latest or str(latest[k].get("tmFc", "")) < str(r.get("tmFc", "")):
+                latest[k] = r
+        base = {}
+        for r in latest.values():
+            if r.get("cmd") in ("해제", "대치해제", "변경해제"):
+                continue
+            base.setdefault(r.get("regId"), []).append({k: str(r.get(k) or "") for k in ("wrn", "lvl", "cmd", "tmFc", "tmEf", "edTm")})
+        status = build_status(base, events, now_digits)
+
+        stored = await _sb_get("wrn_zone_status?select=zone_id,warnings,note")
+        stored = {r["zone_id"]: r for r in stored} if isinstance(stored, list) else {}
+        for zid, st in status.items():
+            old = stored.get(zid)
+            if old and old.get("warnings") == st["warnings"] and (old.get("note") or "") == st["note"]:
+                continue
+            await _sb_upsert("wrn_zone_status", {"zone_id": zid, "zone_name": ZONE_NAME.get(zid), "parent_id": SUB_PARENT.get(zid),
+                                                 "warnings": st["warnings"], "note": st["note"],
+                                                 "source": "통보문" if st["note"] else "wrn_now_data",
+                                                 "updated_at": now.isoformat()}, "zone_id")
+            await _sb_post("wrn_zone_history", {"zone_id": zid, "zone_name": ZONE_NAME.get(zid),
+                                                "before": (old or {}).get("warnings"), "after": st["warnings"], "reason": st["note"] or None})
+
+        # 새로 읽은 제외·해제 중 알림 대상 평수구역만 푸시 (처음 실행 때는 기존 통보문이라 보내지 않음)
+        if first_run:
+            return
+        subs = None
+        for e in new_events:
+            if e["zone_id"] not in PUSH_SUBS or e["action"] == "include":
+                continue
+            t = e.get("tmEf", "")
+            when = f"{int(t[6:8])}일 {t[8:10]}:{t[10:12]}" if len(t) >= 12 else ""
+            if e["action"] == "exclude":
+                title, body = f"[진도 운항관리] {e['level']} 제외", f"{ZONE_NAME[e['zone_id']]}\n{ZONE_NAME[e['parent_id']]} 특보에서 제외"
+            else:
+                title, body = f"[진도 운항관리] {e['level']} 해제", f"{ZONE_NAME[e['zone_id']]}" + (f"\n{when} 해제" if when else "")
+            if subs is None:
+                subs = await _sb_get("push_subscriptions?select=endpoint,p256dh,auth")
+            for s in subs:
+                await asyncio.to_thread(_send_push, {"endpoint": s["endpoint"], "keys": {"p256dh": s["p256dh"], "auth": s["auth"]}},
+                                        title, body, f"sub-{e['zone_id']}-{e['action']}-{e['tmFc']}")
+
     @app.get("/api/push/check-warnings")
     async def push_check_warnings():
         """Render Cron Job이 5분마다 호출 → 특보 변경 감지 후 푸시 발송"""
@@ -1005,6 +1093,11 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             await _notify_new_wind_scenario()
         except Exception as e:
             print(f"시나리오 알림 확인 실패: {e}")
+
+        try:
+            await _update_wrn_zones()
+        except Exception as e:
+            print(f"통보문 평수구역 갱신 실패: {e}")
 
         # 알림 대상 구역 (기상청 REG_ID, 평수구역 구분) → 표시 이름
         PUSH_ZONES = {
