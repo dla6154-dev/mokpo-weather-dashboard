@@ -971,24 +971,14 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
             return {"ok": False, "error": str(e)}
 
     async def _release_time_text(reg_id):
-        """기상청 특보코드조회(getPwnCd)에서 해당 해역의 최근 해제 통보 → '2일 04:00 발표 · 06:00 해제'"""
-        import httpx
-        now = datetime.now(KST)
-        params = {"serviceKey": WRN_SERVICE_KEY, "pageNo": "1", "numOfRows": "20", "dataType": "JSON",
-                  "fromTmFc": (now - timedelta(days=1)).strftime("%Y%m%d"), "toTmFc": now.strftime("%Y%m%d"), "areaCode": reg_id}
-        try:
-            async with httpx.AsyncClient(timeout=10) as client:
-                r = await client.get("https://apis.data.go.kr/1360000/WthrWrnInfoService/getPwnCd", params=params)
-            body = r.json()["response"].get("body") or {}
-            items = (body.get("items") or {}).get("item") or []
-        except Exception as e:
-            print(f"[push] getPwnCd 실패 {reg_id}: {e}")
-            return ""
-        rel = [i for i in items if str(i.get("command")) == "2" and str(i.get("cancel")) == "0" and i.get("endTime")]
+        """저장된 통보문(kma_wrn_notice)에서 해당 해역의 최근 해제 → '2일 04:00 발표 · 06:00 해제'"""
+        since = (datetime.now(KST) - timedelta(days=1)).strftime("%Y%m%d%H%M")
+        notices = await _sb_get(f"kma_wrn_notice?select=events&tm_fc=gte.{since}&order=tm_fc.desc,tm_seq.desc")
+        rel = [e for n in (notices if isinstance(notices, list) else []) for e in (n.get("events") or [])
+               if e.get("zone_id") == reg_id and e.get("action") in ("base_release", "release")]
         if not rel:
             return ""
-        i = max(rel, key=lambda x: int(x["tmFc"]))
-        fc, ed = str(i["tmFc"]), str(i["endTime"])
+        fc, ed = str(rel[0]["tmFc"]), str(rel[0]["tmEf"])
         day = "" if fc[6:8] == ed[6:8] else f"{int(ed[6:8])}일 "
         return f"{int(fc[6:8])}일 {fc[8:10]}:{fc[10:12]} 발표 · {day}{ed[8:10]}:{ed[10:12]} 해제"
 
