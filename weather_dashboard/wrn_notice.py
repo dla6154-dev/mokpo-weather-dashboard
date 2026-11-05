@@ -16,7 +16,9 @@ ZONES = [
     ("S1321100", "전남서부남해앞바다", [("S2310700", "평수구역")]),
     ("S1322100", "남해서부서쪽먼바다", [("S2330100", "추자도연안바다")]),
 ]
-NOTICE_STNS = (156, 184)  # 광주지방기상청, 제주지방기상청
+NOTICE_STNS = (108, 156, 184)  # 본청, 광주지방기상청, 제주지방기상청
+# 해제 시각을 읽을 기본 해역 (알림 대상 포함)
+BASE_NAMES = {**{pid: name for pid, name, _ in ZONES}, "S1323100": "제주도북부앞바다"}
 
 def _norm(s):
     return re.sub(r"[\s·.ㆍ]", "", s or "")
@@ -76,11 +78,19 @@ def parse_notice(item):
                     continue
                 sid = SUB_BY_PARENT.get(pid, {}).get(sub) if pid else None
                 if not sid:
-                    unparsed.append(m.group(0).strip())
+                    if pid:  # 우리 해역인데 처음 보는 평수구역 표기
+                        unparsed.append(m.group(0).strip())
                     continue
                 action = "release" if cmd == "해제" else ("exclude" if exclude else "include")
                 events.append({"zone_id": sid, "parent_id": pid, "wrn": wrn, "action": action,
                                "tmEf": times.get(num, tm_fc), "tmFc": tm_fc, "level": wname})
+        if cmd == "해제":
+            # 평수구역 괄호를 뺀 나머지에 적힌 기본 해역 = 기본 해역 해제
+            rest = _norm(PAREN_RE.sub(lambda m: "" if ("평수" in m.group(2) or "연안" in m.group(2)) else m.group(0), body))
+            for bid, bname in BASE_NAMES.items():
+                if _norm(bname) in rest:
+                    events.append({"zone_id": bid, "parent_id": None, "wrn": wrn, "action": "base_release",
+                                   "tmEf": times.get(num, tm_fc), "tmFc": tm_fc, "level": wname})
     return events, "; ".join(dict.fromkeys(unparsed))
 
 
