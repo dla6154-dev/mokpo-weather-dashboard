@@ -983,10 +983,10 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
         return f"{int(fc[6:8])}일 {fc[8:10]}:{fc[10:12]} 발표 · {day}{ed[8:10]}:{ed[10:12]} 해제"
 
     async def _update_wrn_zones():
-        """통보문에서 평수구역 제외/해제를 읽어 wrn_zone_status 갱신, 새 제외·해제는 푸시"""
+        """통보문에서 평수구역·연안바다 제외/해제/발표를 읽어 전국 wrn_zone_status 갱신, 알림 대상 구역은 푸시"""
         import httpx, json as _json
         from .wrn_notice import NOTICE_STNS, ZONE_NAME, SUB_PARENT, parse_notice, build_status
-        PUSH_SUBS = {"S2210500", "S2211400", "S2211200"}
+        PUSH_SUBS = {"S2210500", "S2211400", "S2211200", "S2320400"}
         now = datetime.now(KST)
         yday, today = (now - timedelta(days=1)).strftime("%Y%m%d"), now.strftime("%Y%m%d")
         now_digits = now.strftime("%Y%m%d%H%M")
@@ -1040,28 +1040,35 @@ AwEHoUQDQgAEo+DpShmPO5b/c+AfQUEtFKhT4oex4ZpdP2jhCAC2kzUmWGYcSZyc
 
         stored = await _sb_get("wrn_zone_status?select=zone_id,warnings,note")
         stored = {r["zone_id"]: r for r in stored} if isinstance(stored, list) else {}
+        upserts, history = [], []
         for zid, st in status.items():
             old = stored.get(zid)
             if old and old.get("warnings") == st["warnings"] and (old.get("note") or "") == st["note"]:
                 continue
-            await _sb_upsert("wrn_zone_status", {"zone_id": zid, "zone_name": ZONE_NAME.get(zid), "parent_id": SUB_PARENT.get(zid),
-                                                 "warnings": st["warnings"], "note": st["note"],
-                                                 "source": "통보문" if st["note"] else "wrn_now_data",
-                                                 "updated_at": now.isoformat()}, "zone_id")
-            await _sb_post("wrn_zone_history", {"zone_id": zid, "zone_name": ZONE_NAME.get(zid),
-                                                "before": (old or {}).get("warnings"), "after": st["warnings"], "reason": st["note"] or None})
+            upserts.append({"zone_id": zid, "zone_name": ZONE_NAME.get(zid), "parent_id": SUB_PARENT.get(zid),
+                            "warnings": st["warnings"], "note": st["note"],
+                            "source": "통보문" if st["note"] else "wrn_now_data", "updated_at": now.isoformat()})
+            if old or st["warnings"]:
+                history.append({"zone_id": zid, "zone_name": ZONE_NAME.get(zid),
+                                "before": (old or {}).get("warnings"), "after": st["warnings"], "reason": st["note"] or None})
+        if upserts:
+            await _sb_upsert("wrn_zone_status", upserts, "zone_id")
+        if history:
+            await _sb_post("wrn_zone_history", history)
 
         # 새로 읽은 제외·해제 중 알림 대상 평수구역만 푸시 (처음 실행 때는 기존 통보문이라 보내지 않음)
         if first_run:
             return
         subs = None
         for e in new_events:
-            if e["zone_id"] not in PUSH_SUBS or e["action"] == "include":
+            if e["zone_id"] not in PUSH_SUBS:
                 continue
             t = e.get("tmEf", "")
             when = f"{int(t[6:8])}일 {t[8:10]}:{t[10:12]}" if len(t) >= 12 else ""
             if e["action"] == "exclude":
                 title, body = f"[진도 운항관리] {e['level']} 제외", f"{ZONE_NAME[e['zone_id']]}\n{ZONE_NAME[e['parent_id']]} 특보에서 제외"
+            elif e["action"] == "include":
+                title, body = f"[진도 운항관리] {e['level']} 발표", f"{ZONE_NAME[e['zone_id']]}" + (f"\n{when} 발효" if when else "")
             else:
                 title, body = f"[진도 운항관리] {e['level']} 해제", f"{ZONE_NAME[e['zone_id']]}" + (f"\n{when} 해제" if when else "")
             if subs is None:
